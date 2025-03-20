@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 绑定手机号</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      transition: all 0.2s;
+    }
+    
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .phone-input:focus {
+      border-color: var(--primary-color);
+    }
+    
+    .timer {
+      color: #999;
+    }
+    
+    .verification-code input {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 0 4px;
+    }
+
+    /* 状态栏样式 */
+    .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 导航栏样式 */
+    .app-header {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background-color: white;
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    /* 主内容区域样式 */
+    .content-container {
+      padding-top: 84px; /* 状态栏(24px) + 导航栏(48px) + 额外间距(12px) */
+      padding-left: 16px;
+      padding-right: 16px;
+      padding-bottom: 80px;
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    /* 运营商图标 */
+    .operator-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    
+    /* 步骤指示器 */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .step {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      position: relative;
+    }
+    
+    .step.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .step.completed {
+      background-color: #10B981;
+      color: white;
+    }
+    
+    .step:not(.active):not(.completed) {
+      background-color: #E5E7EB;
+      color: #6B7280;
+    }
+    
+    .step-line {
+      flex-grow: 1;
+      height: 2px;
+      background-color: #E5E7EB;
+      margin: 0 4px;
+    }
+    
+    .step-line.completed {
+      background-color: #10B981;
+    }
+    
+    /* 加载动画 */
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* 一键登录按钮 */
+    .one-click-button {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .one-click-button:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      100% {
+        left: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span>20:30</span>
+    <div class="flex items-center space-x-1">
+      <i class="fas fa-signal"></i>
+      <i class="fas fa-wifi"></i>
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <!-- 导航栏 -->
+  <div class="app-header">
+    <h1 class="text-center flex-grow font-medium text-lg">绑定手机号</h1>
+    <a href="login-wx.html" class="text-gray-500">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+  
+  <!-- 主内容区域 -->
+  <div class="content-container">
+    <!-- 微信用户信息 -->
+    <div class="flex items-center mb-8">
+      <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+        <img src="https://avatars.githubusercontent.com/u/1234567" alt="微信头像" class="w-full h-full object-cover">
+      </div>
+      <div class="ml-3">
+        <p class="font-medium">微信用户</p>
+        <p class="text-sm text-gray-500">已授权微信登录</p>
+      </div>
+    </div>
+    
+    <!-- 绑定提示 -->
+    <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-800 mb-8">
+      <div class="flex">
+        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+        <p>为了账号安全，建议您绑定手机号，可用于账号找回和安全验证。本机号码一键绑定，无需输入验证码。</p>
+      </div>
+    </div>
+    
+    <!-- 一键绑定说明 -->
+    <div class="text-center mb-8">
+      <div class="inline-block p-4 bg-gray-100 rounded-full mb-4">
+        <i class="fas fa-mobile-alt text-3xl text-gray-600"></i>
+      </div>
+      <h3 class="text-lg font-medium mb-2">本机号码一键绑定</h3>
+      <p class="text-sm text-gray-500 mb-2">通过运营商网关安全认证</p>
+      <p class="text-sm text-gray-500">无需输入验证码，快速完成绑定</p>
+    </div>
+    
+    <!-- 运营商SDK区域 -->
+    <div class="bg-white rounded-xl p-5 shadow-sm mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-gray-700 font-medium">运营商授权</span>
+        <div class="flex space-x-3">
+          <img src="https://img.icons8.com/color/48/000000/china-mobile.png" alt="中国移动" class="operator-logo">
+          <img src="https://img.icons8.com/color/48/000000/china-unicom.png" alt="中国联通" class="operator-logo">
+          <img src="https://img.icons8.com/color/48/000000/china-telecom.png" alt="中国电信" class="operator-logo">
+        </div>
+      </div>
+      
+      <div class="rounded-lg border border-gray-200 p-4 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400 mb-1">识别运营商</p>
+            <p class="text-base font-medium" id="operator-name">中国移动</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400 mb-1">当前手机号</p>
+            <p class="text-base font-medium" id="phone-number">138****5678</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-xs text-gray-500 mb-4">
+        <p>本功能由运营商SDK提供，通过网关安全认证获取本机号码</p>
+      </div>
+    </div>
+    
+    <!-- 一键登录按钮 -->
+    <button id="one-click-bind" class="w-full btn-primary one-click-button text-white py-4 rounded-xl font-medium flex items-center justify-center shadow-md mb-4">
+      本机号码一键绑定
+    </button>
+    
+    <!-- 其他方式绑定 -->
+    <div class="text-center mb-8">
+      <a href="#" id="other-methods" class="text-gray-500 text-sm py-2 px-4 inline-block">
+        无法识别？使用其他方式 <i class="fas fa-arrow-right ml-1 text-xs"></i>
+      </a>
+    </div>
+    
+    <!-- 跳过选项 -->
+    <div class="text-center">
+      <a href="index.html" class="text-gray-500 text-sm py-2 px-4 inline-block">
+        暂不绑定，跳过 <i class="fas fa-arrow-right ml-1 text-xs"></i>
+      </a>
+    </div>
+    
+    <!-- 底部说明 -->
+    <div class="mt-8 text-center text-xs text-gray-500">
+      <p>绑定即代表您同意 <a href="#" class="text-blue-500">用户协议</a> 和 <a href="#" class="text-blue-500">隐私政策</a></p>
+    </div>
+  </div>
+
+  <!-- 绑定进行中弹层 -->
+  <div id="binding-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-5 w-4/5 max-w-sm">
+      <div class="text-center">
+        <div class="step-indicator mb-6">
+          <div class="step completed">
+            <i class="fas fa-check text-xs"></i>
+          </div>
+          <div class="step-line completed"></div>
+          <div class="step active">2</div>
+          <div class="step-line"></div>
+          <div class="step">3</div>
+        </div>
+        
+        <div class="mb-4">
+          <div class="loading-spinner"></div>
+          <p class="text-lg font-medium inline-block align-middle">正在验证本机号码</p>
+        </div>
+        <p class="text-sm text-gray-500 mb-6">请稍候，正在通过运营商网关安全认证...</p>
+        
+        <button id="cancel-binding" class="w-full py-3 border border-gray-300 rounded-lg text-gray-700">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 绑定成功弹层 -->
+  <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-5 w-4/5 max-w-sm">
+      <div class="text-center">
+        <div class="step-indicator mb-6">
+          <div class="step completed">
+            <i class="fas fa-check text-xs"></i>
+          </div>
+          <div class="step-line completed"></div>
+          <div class="step completed">
+            <i class="fas fa-check text-xs"></i>
+          </div>
+          <div class="step-line completed"></div>
+          <div class="step completed">
+            <i class="fas fa-check text-xs"></i>
+          </div>
+        </div>
+        
+        <div class="w-16 h-16 rounded-full bg-green-100 text-green-500 flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-check text-2xl"></i>
+        </div>
+        
+        <p class="text-lg font-medium mb-2">手机号绑定成功</p>
+        <p class="text-sm text-gray-500 mb-6">您的手机号 <span id="success-phone">138****5678</span> 已成功绑定</p>
+        
+        <button id="goto-home" class="w-full py-3 btn-primary text-white rounded-lg">
+          进入首页
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 模拟运营商SDK获取本机号码
+     * 在实际应用中，这里会调用运营商提供的SDK
+     */
+    function simulateOperatorSDK() {
+      // 模拟延迟获取手机号
+      setTimeout(() => {
+        // 随机生成一个手机号前缀，这里使用中国移动的一些号段
+        const prefixes = ['134', '135', '136', '137', '138', '139', '150', '151', '152'];
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        
+        // 生成后8位
+        const suffix = Math.floor(10000000 + Math.random() * 90000000).toString().substring(0, 8);
+        
+        // 完整手机号
+        const fullNumber = prefix + suffix;
+        
+        // 脱敏显示
+        const maskedNumber = fullNumber.substring(0, 3) + '****' + fullNumber.substring(7, 11);
+        
+        // 更新UI显示
+        document.getElementById('phone-number').textContent = maskedNumber;
+        document.getElementById('success-phone').textContent = maskedNumber;
+      }, 500);
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 模拟运营商SDK初始化并获取本机号码
+      simulateOperatorSDK();
+      
+      // 本机号码一键绑定按钮点击事件
+      document.getElementById('one-click-bind').addEventListener('click', function() {
+        // 显示绑定进行中弹层
+        document.getElementById('binding-modal').classList.remove('hidden');
+        
+        // 模拟绑定过程，3秒后显示成功
+        setTimeout(() => {
+          document.getElementById('binding-modal').classList.add('hidden');
+          document.getElementById('success-modal').classList.remove('hidden');
+        }, 3000);
+      });
+      
+      // 取消绑定按钮
+      document.getElementById('cancel-binding').addEventListener('click', function() {
+        document.getElementById('binding-modal').classList.add('hidden');
+      });
+      
+      // 进入首页按钮
+      document.getElementById('goto-home').addEventListener('click', function() {
+        window.location.href = 'index.html';
+      });
+      
+      // 其他方式绑定
+      document.getElementById('other-methods').addEventListener('click', function() {
+        alert('此处可以跳转到手动输入手机号和验证码的页面');
+      });
+    });
+  </script>
+</body>
+</html> 

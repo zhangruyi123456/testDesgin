@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 图片识别</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 - 修改为固定在iPhone屏幕内顶部 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 识别类型选项卡 */
+    .recognition-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .recognition-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 识别类型选项卡样式优化 */
+    .recognition-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .recognition-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .recognition-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 上传图片区域 */
+    .upload-area {
+      border: 2px dashed #e5e7eb;
+      border-radius: 16px;
+      transition: all 0.3s;
+    }
+    
+    .upload-area:hover, .upload-area.dragover {
+      border-color: #4F46E5;
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+    
+    /* 图片预览区域 */
+    .image-preview {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* 识别结果项目 */
+    .result-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .result-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #4F46E5;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    
+    /* 历史记录样式 */
+    .history-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .history-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 进度条样式 */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: #4F46E5;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    /* 图片操作工具栏 */
+    .image-toolbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+      padding: 16px 12px 12px;
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .toolbar-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #4F46E5;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 新增顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">图片识别</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-history text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 - 修改顶部边距以适应新的导航结构 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 识别类型选项卡 -->
+          <div class="recognition-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-cube mr-1"></i>物体识别
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-user mr-1"></i>人脸分析
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-font mr-1"></i>文字识别
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-qrcode mr-1"></i>扫码识别
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-images mr-1"></i>场景分析
+            </button>
+          </div>
+          
+          <!-- 上传图片区域 - 初始状态 -->
+          <div id="uploadContainer" class="mb-6">
+            <div class="upload-area flex flex-col items-center justify-center py-10 px-4 bg-white">
+              <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
+                <i class="fas fa-cloud-upload-alt text-2xl text-indigo-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-800 mb-2">上传图片或拍照</h3>
+              <p class="text-gray-500 text-sm text-center mb-4">支持JPG、PNG、WEBP等格式，<br>最大10MB</p>
+              <div class="flex space-x-3">
+                <label for="fileUpload" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer flex items-center">
+                  <i class="fas fa-folder-open mr-2"></i>
+                  选择图片
+                  <input type="file" id="fileUpload" accept="image/*" class="hidden">
+                </label>
+                <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                  <i class="fas fa-camera mr-2"></i>
+                  拍照
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 图片预览和识别结果 - 上传后显示 -->
+          <div id="resultContainer" class="hidden mb-6">
+            <!-- 图片预览 -->
+            <div class="image-preview mb-4">
+              <img src="https://images.unsplash.com/photo-1682687981974-c5ef2111640c" alt="预览图片" class="w-full object-cover">
+              <div class="image-toolbar">
+                <button class="toolbar-button">
+                  <i class="fas fa-crop-alt"></i>
+                </button>
+                <button class="toolbar-button">
+                  <i class="fas fa-rotate"></i>
+                </button>
+                <button class="toolbar-button">
+                  <i class="fas fa-sliders-h"></i>
+                </button>
+                <button class="toolbar-button text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- 识别进度 -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">识别进度</span>
+                <span class="text-sm text-indigo-600">100%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-value" style="width: 100%;"></div>
+              </div>
+            </div>
+            
+            <!-- 识别结果 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">识别结果</h3>
+              
+              <!-- 主要结果 -->
+              <div class="result-item p-3 mb-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="font-medium text-gray-800 mb-1">猫咪（家猫）</h4>
+                    <p class="text-sm text-gray-500">Felis catus - 家养猫科动物</p>
+                  </div>
+                  <span class="bg-indigo-600 text-white text-xs font-medium px-2 py-1 rounded-lg">98.5%</span>
+                </div>
+              </div>
+              
+              <!-- 次要结果 -->
+              <div class="space-y-3">
+                <div class="result-item p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-1">沙发/家具</h4>
+                      <p class="text-sm text-gray-500">图片中包含的家居用品</p>
+                    </div>
+                    <span class="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded-lg">76.2%</span>
+                  </div>
+                </div>
+                <div class="result-item p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-1">室内环境</h4>
+                      <p class="text-sm text-gray-500">家居生活场景</p>
+                    </div>
+                    <span class="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded-lg">65.8%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 图片标签 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">相关标签</h3>
+              <div>
+                <span class="tag">宠物</span>
+                <span class="tag">猫咪</span>
+                <span class="tag">动物</span>
+                <span class="tag">家居</span>
+                <span class="tag">生活</span>
+                <span class="tag">可爱</span>
+                <span class="tag">休闲</span>
+                <span class="tag">室内</span>
+              </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex space-x-3 mb-6">
+              <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium">
+                <i class="fas fa-share-alt mr-2"></i>分享结果
+              </button>
+              <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium">
+                <i class="fas fa-save mr-2"></i>保存结果
+              </button>
+            </div>
+          </div>
+          
+          <!-- 识别历史记录 -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">识别历史</h2>
+              <button class="text-indigo-600 text-sm">查看全部</button>
+            </div>
+            
+            <div class="space-y-3">
+              <!-- 历史记录1 -->
+              <div class="history-item overflow-hidden">
+                <div class="flex">
+                  <div class="w-20 h-20">
+                    <img src="https://images.unsplash.com/photo-1686003571669-a80608660f61" alt="历史图片" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800 mb-1">建筑识别</h4>
+                        <p class="text-xs text-gray-500">现代建筑、城市景观</p>
+                      </div>
+                      <span class="text-xs text-gray-500">昨天</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap">
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1 mb-1">建筑</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1 mb-1">城市</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mb-1">现代</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 历史记录2 -->
+              <div class="history-item overflow-hidden">
+                <div class="flex">
+                  <div class="w-20 h-20">
+                    <img src="https://images.unsplash.com/photo-1684469400884-dc2b09d26772" alt="历史图片" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800 mb-1">食物识别</h4>
+                        <p class="text-xs text-gray-500">美食、甜点、餐厅</p>
+                      </div>
+                      <span class="text-xs text-gray-500">3天前</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap">
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1 mb-1">美食</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1 mb-1">甜点</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mb-1">餐厅</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 相关功能推荐 -->
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">相关功能</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-images text-blue-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">图像修复</h3>
+                <p class="text-xs text-gray-500">修复老照片，去除瑕疵</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-magic text-purple-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">图像生成</h3>
+                <p class="text-xs text-gray-500">AI创作个性化图像</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-object-group text-green-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">背景移除</h3>
+                <p class="text-xs text-gray-500">自动抠图，一键抠除背景</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-paint-brush text-yellow-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">风格转换</h3>
+                <p class="text-xs text-gray-500">将照片转为艺术风格</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    /**
+     * 简单切换上传和结果容器的显示
+     * 实际应用中应该根据真实上传和识别流程来控制
+     */
+    document.getElementById('fileUpload').addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        document.getElementById('uploadContainer').classList.add('hidden');
+        document.getElementById('resultContainer').classList.remove('hidden');
+        
+        // 模拟识别进度
+        const progressBar = document.querySelector('.progress-value');
+        progressBar.style.width = '0%';
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          progressBar.style.width = progress + '%';
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    });
+    
+    // 模拟点击删除按钮返回上传状态
+    document.querySelector('.fa-trash-alt').parentElement.addEventListener('click', function() {
+      document.getElementById('uploadContainer').classList.remove('hidden');
+      document.getElementById('resultContainer').classList.add('hidden');
+    });
+    
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 如果在preview中，隐藏iPhone边框
+    if (isInPreview()) {
+      const frameElement = document.querySelector('.iphone-frame');
+      if (frameElement) {
+        frameElement.style.boxShadow = 'none';
+        frameElement.style.backgroundColor = 'transparent';
+        frameElement.style.borderRadius = '0';
+        frameElement.style.padding = '0';
+        frameElement.style.margin = '0';
+        frameElement.style.width = '100%';
+        frameElement.style.height = '100%';
+      }
+      
+      const screenElement = document.querySelector('.iphone-screen');
+      if (screenElement) {
+        screenElement.style.borderRadius = '0';
+      }
+      
+      const homeIndicator = document.querySelector('.iphone-home-indicator');
+      if (homeIndicator) {
+        homeIndicator.style.display = 'none';
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

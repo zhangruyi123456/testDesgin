@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - AI助手</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-gray-50">
+  <!-- 状态栏 - 固定定位 -->
+  <div class="status-bar">
+    <span>20:30</span>
+    <div class="flex items-center space-x-1">
+      <i class="fas fa-signal"></i>
+      <i class="fas fa-wifi"></i>
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+
+  <!-- 头部 - 固定定位 -->
+  <div class="app-header">
+    <h1 class="text-lg font-semibold text-gray-800">AI助手</h1>
+    <button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+      <i class="fas fa-ellipsis-h text-gray-600"></i>
+    </button>
+  </div>
+
+  <!-- 聊天界面 - 添加上边距 -->
+  <div class="h-[calc(100vh-160px)] flex flex-col fixed-header-spacing">
+    <!-- 聊天记录区 -->
+    <div class="flex-1 p-4 overflow-y-auto space-y-4">
+      <!-- 系统消息 -->
+      <div class="flex justify-center mb-6">
+        <div class="bg-gray-100 text-gray-600 rounded-full px-4 py-1 text-xs">
+          今天 20:30
+        </div>
+      </div>
+
+      <!-- AI消息 -->
+      <div class="flex items-end space-x-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-robot text-white text-sm"></i>
+        </div>
+        <div class="bg-white rounded-t-2xl rounded-r-2xl p-3 shadow-sm max-w-[80%]">
+          <p class="text-gray-800 text-sm">你好！我是你的AI助手，有什么我可以帮助你的吗？</p>
+        </div>
+      </div>
+
+      <!-- 用户消息 -->
+      <div class="flex items-end justify-end space-x-2">
+        <div class="bg-indigo-500 text-white rounded-t-2xl rounded-l-2xl p-3 shadow-sm max-w-[80%]">
+          <p class="text-sm">你能帮我写一篇关于人工智能发展历史的短文吗？</p>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user text-gray-500 text-sm"></i>
+        </div>
+      </div>
+
+      <!-- AI消息（长文本） -->
+      <div class="flex items-end space-x-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-robot text-white text-sm"></i>
+        </div>
+        <div class="bg-white rounded-t-2xl rounded-r-2xl p-3 shadow-sm max-w-[80%]">
+          <p class="text-gray-800 text-sm">
+            人工智能发展历史可以追溯到20世纪40年代。1950年，艾伦·图灵提出了著名的"图灵测试"。60-70年代是AI的第一个黄金时期，出现了许多专家系统。80年代后期到90年代，神经网络研究开始复兴。
+            <br><br>
+            21世纪初，随着大数据时代的到来和计算能力的提升，深度学习取得了突破性进展，特别是在2012年，深度神经网络在ImageNet竞赛中展现出卓越性能。如今，AI已经在语音识别、图像处理、自然语言处理等多个领域取得了惊人的成就。
+          </p>
+        </div>
+      </div>
+
+      <!-- 用户消息 -->
+      <div class="flex items-end justify-end space-x-2">
+        <div class="bg-indigo-500 text-white rounded-t-2xl rounded-l-2xl p-3 shadow-sm max-w-[80%]">
+          <p class="text-sm">谢谢！这个总结非常清晰。</p>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user text-gray-500 text-sm"></i>
+        </div>
+      </div>
+
+      <!-- AI正在输入 -->
+      <div class="flex items-end space-x-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-robot text-white text-sm"></i>
+        </div>
+        <div class="bg-white rounded-t-2xl rounded-r-2xl p-3 shadow-sm">
+          <div class="flex space-x-1">
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能工具栏 -->
+    <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-200">
+      <button class="w-8 h-8 flex items-center justify-center text-gray-500">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button class="w-8 h-8 flex items-center justify-center text-gray-500">
+        <i class="fas fa-camera"></i>
+      </button>
+      <button class="w-8 h-8 flex items-center justify-center text-gray-500">
+        <i class="fas fa-image"></i>
+      </button>
+      <button class="w-8 h-8 flex items-center justify-center text-gray-500">
+        <i class="fas fa-microphone"></i>
+      </button>
+    </div>
+
+    <!-- 输入框 -->
+    <div class="p-3 bg-white border-t border-gray-200">
+      <div class="flex items-center bg-gray-100 rounded-full overflow-hidden pr-2">
+        <input type="text" placeholder="发送消息..." class="flex-1 bg-transparent px-4 py-2 focus:outline-none text-sm">
+        <button class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
+          <i class="fas fa-paper-plane text-white text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

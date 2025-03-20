@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 设计预览</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      background-color: #f0f2f5;
+      padding: 2rem;
+      overflow-x: hidden; /* 隐藏水平滚动条 */
+    }
+    
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    .page-card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .page-header {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+    }
+    
+    .page-preview {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      min-height: 750px;
+    }
+    
+    .iphone-preview {
+      width: 375px;
+      height: 812px;
+      position: relative;
+      background-color: black;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative; /* 添加相对定位以支持底部导航栏定位 */
+    }
+    
+    .nav-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      z-index: 100;
+      pointer-events: none; /* 允许点击穿透 */
+    }
+    
+    .bottom-nav {
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      right: 10px;
+      height: 80px;
+      background-color: #ffffff;
+      border-radius: 24px;
+      border-top: 1px solid #e5e7eb;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 12px;
+      pointer-events: none; /* 允许点击穿透 */
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      pointer-events: none; /* 允许点击穿透 */
+    }
+    
+    .nav-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+    
+    .nav-label {
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    .intro-section {
+      max-width: 1000px;
+      margin: 0 auto 3rem auto;
+    }
+    
+    /* 完整应用的样式，不需要额外的iPhone边框 */
+    .full-app-preview {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      min-height: 750px;
+    }
+    
+    .full-app-iframe {
+      width: 395px; /* 与iPhone框架宽度匹配 */
+      height: 832px; /* 与iPhone框架高度匹配 */
+      border: none;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      border-radius: 40px;
+      overflow: hidden;
+    }
+    
+    /* 针对已经有iPhone边框的页面的专用样式 */
+    .native-preview {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      min-height: 750px;
+    }
+    
+    .native-iframe {
+      width: 375px; /* 匹配页面内部的iPhone宽度 */
+      height: 812px; /* 匹配页面内部的iPhone高度 */
+      border: none;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+</head>
+<body>
+  <div class="intro-section">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">AI集合工具应用 - 设计预览</h1>
+    <p class="text-gray-600 mb-6">下面是AI集合工具应用的所有页面预览，以网格形式展示，方便整体查看设计效果。</p>
+    <div class="flex space-x-2">
+      <a href="index.html" class="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-mobile-alt mr-2"></i>查看完整应用
+      </a>
+      <a href="https://github.com/your-github/ai-tools-app" class="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fab fa-github mr-2"></i>查看源代码
+      </a>
+    </div>
+  </div>
+  
+  <div class="page-grid">
+    <!-- 微信登录页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">微信登录 (login-wx.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">支持微信一键授权登录</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="login-wx.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 手机号绑定页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">手机号绑定 (phone-bind.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">微信授权后进行手机号验证绑定</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="phone-bind.html"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 首页预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">首页 (home.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">展示AI工具集合、热门功能和推荐内容</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="home.html"></iframe>
+            <!-- 添加底部导航栏覆盖层 -->
+            <div class="nav-overlay">
+              <div class="bottom-nav">
+                <div class="nav-item">
+                  <i class="fas fa-home nav-icon text-indigo-600"></i>
+                  <span class="nav-label text-indigo-600">首页</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-comment-dots nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">助手</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-magic nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">创意</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-user nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">我的</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI助手预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">AI助手 (assistant.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">提供智能对话界面，支持文本问答</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="assistant.html"></iframe>
+            <!-- 添加底部导航栏覆盖层 -->
+            <div class="nav-overlay">
+              <div class="bottom-nav">
+                <div class="nav-item">
+                  <i class="fas fa-home nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">首页</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-comment-dots nav-icon text-indigo-600"></i>
+                  <span class="nav-label text-indigo-600">助手</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-magic nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">创意</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-user nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">我的</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 创意工具预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">创意工具 (creative.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">展示各种AI创意生成功能，如图像、故事、音乐</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="creative.html"></iframe>
+            <!-- 添加底部导航栏覆盖层 -->
+            <div class="nav-overlay">
+              <div class="bottom-nav">
+                <div class="nav-item">
+                  <i class="fas fa-home nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">首页</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-comment-dots nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">助手</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-magic nav-icon text-indigo-600"></i>
+                  <span class="nav-label text-indigo-600">创意</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-user nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">我的</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 个人中心预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">个人中心 (profile.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">用户信息、会员状态和设置管理</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="profile.html"></iframe>
+            <!-- 添加底部导航栏覆盖层 -->
+            <div class="nav-overlay">
+              <div class="bottom-nav">
+                <div class="nav-item">
+                  <i class="fas fa-home nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">首页</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-comment-dots nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">助手</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-magic nav-icon text-gray-500"></i>
+                  <span class="nav-label text-gray-500">创意</span>
+                </div>
+                <div class="nav-item">
+                  <i class="fas fa-user nav-icon text-indigo-600"></i>
+                  <span class="nav-label text-indigo-600">我的</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 图片识别页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">图片识别 (image-recognition.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">智能识别图像内容并分析文字信息</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="image-recognition.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 完整应用预览 - 移除了重复的iPhone边框 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">完整应用 (index.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">带底部导航栏的完整应用界面</p>
+      </div>
+      <div class="full-app-preview">
+        <iframe src="index.html" class="full-app-iframe"></iframe>
+      </div>
+    </div>
+
+    <!-- 语音转文字页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">语音转文字 (voice-recognition.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">智能语音识别与文字转换工具</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="voice-recognition.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史记录页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">历史记录 (history.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">查看和管理您的AI工具使用历史</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="history.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 化工图片分析页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">化工图片分析 (image-analysis.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">针对化工行业的专业图片分析工具</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="image-analysis.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 化工文档分析页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">化工文档分析 (document-analysis.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">针对化工行业的专业文档分析工具</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="document-analysis.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 化工培训与考试页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">化工培训与考试 (chemical-training.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">针对化工行业的专业培训和考试系统</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="chemical-training.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 行业动态页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">行业动态 (chemical-news.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">化工行业新闻、政策法规和市场动态</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="chemical-news.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 化工天气晴雨表/知识标签页面预览 -->
+    <div class="page-card">
+      <div class="page-header">
+        <h2 class="text-xl font-semibold text-gray-800">化工天气晴雨表 (weather-knowledge.html)</h2>
+        <p class="text-sm text-gray-600 mt-1">化工安全预警、工艺监控和专业知识标签库</p>
+      </div>
+      <div class="page-preview">
+        <div class="iphone-preview">
+          <div class="iphone-screen">
+            <iframe src="weather-knowledge.html?preview=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="text-center py-8 mt-12 text-gray-600 text-sm">
+    <p>© 2023 AI集合工具 - 高保真原型设计</p>
+    <p class="mt-2">使用HTML、Tailwind CSS和Font Awesome构建</p>
+  </footer>
+</body>
+</html> 

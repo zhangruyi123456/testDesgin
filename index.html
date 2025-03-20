@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+      -webkit-overflow-scrolling: touch; /* 确保iframe内容在iOS上平滑滚动 */
+    }
+    
+    /* 优化底部标签栏样式 */
+    .ios-bottom-tab {
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      right: 10px;
+      height: 80px;
+      background-color: #ffffff;
+      border-radius: 24px;
+      border-top: 1px solid #e5e7eb;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      z-index: 9;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 12px;
+    }
+    
+    .tab-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    
+    .tab-button:active {
+      background-color: #f3f4f6;
+      transform: scale(0.95);
+    }
+    
+    .tab-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+    
+    .tab-label {
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    /* 调整内容区域的高度 */
+    .iphone-content-area {
+      padding-bottom: 100px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center items-center p-4">
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <div class="iphone-notch"></div>
+      <div class="iphone-content-area">
+        <iframe id="content-frame" src="home.html" class="w-full h-full"></iframe>
+      </div>
+      
+      <!-- 优化后的iOS风格底部导航栏 -->
+      <div class="ios-bottom-tab">
+        <button onclick="changeTab('home.html')" class="tab-button">
+          <i class="fas fa-home tab-icon text-indigo-600"></i>
+          <span class="tab-label text-indigo-600">首页</span>
+        </button>
+        <button onclick="changeTab('assistant.html')" class="tab-button">
+          <i class="fas fa-comment-dots tab-icon text-gray-500"></i>
+          <span class="tab-label text-gray-500">助手</span>
+        </button>
+        <button onclick="changeTab('community.html')" class="tab-button">
+          <i class="fas fa-palette tab-icon text-gray-500"></i>
+          <span class="tab-label text-gray-500">创作</span>
+        </button>
+        <button onclick="changeTab('image-recognition.html')" class="tab-button">
+          <i class="fas fa-camera tab-icon text-gray-500"></i>
+          <span class="tab-label text-gray-500">识别</span>
+        </button>
+        <button onclick="changeTab('profile.html')" class="tab-button">
+          <i class="fas fa-user tab-icon text-gray-500"></i>
+          <span class="tab-label text-gray-500">我的</span>
+        </button>
+      </div>
+      
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 切换标签页
+     * @param {string} page - 要加载的页面路径
+     */
+    function changeTab(page) {
+      document.getElementById('content-frame').src = page;
+      
+      // 更新图标和文字颜色
+      const tabButtons = document.querySelectorAll('.ios-bottom-tab button');
+      tabButtons.forEach(button => {
+        const icon = button.querySelector('.tab-icon');
+        const label = button.querySelector('.tab-label');
+        
+        icon.classList.remove('text-indigo-600');
+        icon.classList.add('text-gray-500');
+        
+        label.classList.remove('text-indigo-600');
+        label.classList.add('text-gray-500');
+      });
+      
+      // 设置当前标签为活跃状态
+      const activeTab = Array.from(document.querySelectorAll('.ios-bottom-tab button'))
+        .find(button => button.getAttribute('onclick').includes(page));
+      
+      if (activeTab) {
+        const icon = activeTab.querySelector('.tab-icon');
+        const label = activeTab.querySelector('.tab-label');
+        
+        icon.classList.remove('text-gray-500');
+        icon.classList.add('text-indigo-600');
+        
+        label.classList.remove('text-gray-500');
+        label.classList.add('text-indigo-600');
+      }
+    }
+  </script>
+</body>
+</html> 

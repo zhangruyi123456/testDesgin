@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 历史记录</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 历史记录分类选项卡 */
+    .history-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .history-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 分类选项卡样式优化 */
+    .history-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .history-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .history-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 历史记录项目 */
+    .history-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .history-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 类型标签样式 */
+    .type-badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: medium;
+    }
+    
+    /* 清空按钮 */
+    .clear-button {
+      transition: all 0.2s;
+    }
+    
+    .clear-button:active {
+      transform: scale(0.95);
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+    
+    /* 搜索框样式 */
+    .search-box {
+      border-radius: 12px;
+      background-color: #f1f1f1;
+    }
+    
+    /* 日期分割线 */
+    .date-divider {
+      position: relative;
+      text-align: center;
+      margin: 16px 0;
+    }
+    
+    .date-divider::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: #e5e7eb;
+      z-index: 1;
+    }
+    
+    .date-divider span {
+      position: relative;
+      z-index: 2;
+      background-color: #f9fafb;
+      padding: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">历史记录</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="nav-icon-btn">
+            <i class="fas fa-search text-gray-600"></i>
+          </div>
+          <button class="clear-button text-sm text-red-500 px-2 py-1 rounded-md">
+            清空
+          </button>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 历史记录分类选项卡 -->
+          <div class="history-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-list-ul mr-1"></i>全部
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-image mr-1"></i>图像
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-microphone mr-1"></i>语音
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-font mr-1"></i>文本
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-music mr-1"></i>音乐
+            </button>
+          </div>
+          
+          <!-- 搜索框 -->
+          <div class="search-box flex items-center px-3 py-2 mb-4">
+            <i class="fas fa-search text-gray-400 mr-2"></i>
+            <input type="text" placeholder="搜索历史记录" class="bg-transparent text-sm text-gray-800 w-full focus:outline-none">
+          </div>
+          
+          <!-- 今天的历史记录 -->
+          <div class="mb-6">
+            <div class="date-divider">
+              <span class="text-xs text-gray-500 bg-gray-50 px-2">今天</span>
+            </div>
+            
+            <div class="space-y-3 mt-3">
+              <!-- 图像识别历史 -->
+              <div class="history-item">
+                <div class="flex">
+                  <div class="w-20 h-20">
+                    <img src="https://images.unsplash.com/photo-1686003571669-a80608660f61" alt="历史图片" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">建筑识别</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="type-badge bg-blue-100 text-blue-600 mr-2">图像识别</span>
+                          <p class="text-xs text-gray-500">10:45</p>
+                        </div>
+                      </div>
+                      <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">现代建筑、城市景观、高楼</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 语音识别历史 -->
+              <div class="history-item">
+                <div class="p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800">会议记录</h4>
+                      <div class="flex items-center mt-1">
+                        <span class="type-badge bg-purple-100 text-purple-600 mr-2">语音识别</span>
+                        <p class="text-xs text-gray-500">09:15</p>
+                      </div>
+                    </div>
+                    <button class="text-gray-400">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">00:15:32 | 普通话</p>
+                  <p class="text-sm text-gray-700 mt-2 line-clamp-2">本次会议我们讨论了第三季度的销售目标和市场策略，大家提出了很多有价值的建议...</p>
+                </div>
+              </div>
+              
+              <!-- 图像生成历史 -->
+              <div class="history-item">
+                <div class="flex">
+                  <div class="w-20 h-20">
+                    <img src="https://images.unsplash.com/photo-1685118148066-da2c5c61e291" alt="AI生成图片" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">未来城市</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="type-badge bg-green-100 text-green-600 mr-2">图像生成</span>
+                          <p class="text-xs text-gray-500">08:30</p>
+                        </div>
+                      </div>
+                      <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">未来城市、科技、晚霞</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 昨天的历史记录 -->
+          <div class="mb-6">
+            <div class="date-divider">
+              <span class="text-xs text-gray-500 bg-gray-50 px-2">昨天</span>
+            </div>
+            
+            <div class="space-y-3 mt-3">
+              <!-- 文本生成历史 -->
+              <div class="history-item">
+                <div class="p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800">产品说明书</h4>
+                      <div class="flex items-center mt-1">
+                        <span class="type-badge bg-yellow-100 text-yellow-600 mr-2">文本生成</span>
+                        <p class="text-xs text-gray-500">15:20</p>
+                      </div>
+                    </div>
+                    <button class="text-gray-400">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                  </div>
+                  <p class="text-sm text-gray-700 mt-2 line-clamp-2">智能家居系统使用指南，包括安装步骤、连接方式和常见问题解答...</p>
+                </div>
+              </div>
+              
+              <!-- 食物识别历史 -->
+              <div class="history-item">
+                <div class="flex">
+                  <div class="w-20 h-20">
+                    <img src="https://images.unsplash.com/photo-1684469400884-dc2b09d26772" alt="食物图片" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">食物识别</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="type-badge bg-blue-100 text-blue-600 mr-2">图像识别</span>
+                          <p class="text-xs text-gray-500">12:45</p>
+                        </div>
+                      </div>
+                      <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">甜点、巧克力、餐厅</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 更早的历史记录 -->
+          <div>
+            <div class="date-divider">
+              <span class="text-xs text-gray-500 bg-gray-50 px-2">更早</span>
+            </div>
+            
+            <div class="space-y-3 mt-3">
+              <!-- 背景移除历史 -->
+              <div class="history-item">
+                <div class="flex">
+                  <div class="w-20 h-20 flex items-center justify-center bg-gray-100">
+                    <div class="relative w-16 h-16">
+                      <img src="https://images.unsplash.com/photo-1585468274952-66591eb14165" alt="原始图片" class="w-full h-full object-cover absolute left-2 top-2 z-0 shadow-sm">
+                      <div class="absolute -right-2 -bottom-2 w-full h-full bg-indigo-50 border border-indigo-100 z-10 rounded"></div>
+                    </div>
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">产品抠图</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="type-badge bg-red-100 text-red-600 mr-2">背景移除</span>
+                          <p class="text-xs text-gray-500">3天前</p>
+                        </div>
+                      </div>
+                      <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">商品、产品展示、透明背景</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 英语练习历史 -->
+              <div class="history-item">
+                <div class="p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800">英语练习</h4>
+                      <div class="flex items-center mt-1">
+                        <span class="type-badge bg-purple-100 text-purple-600 mr-2">语音识别</span>
+                        <p class="text-xs text-gray-500">4天前</p>
+                      </div>
+                    </div>
+                    <button class="text-gray-400">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">00:03:45 | 英语</p>
+                  <p class="text-sm text-gray-700 mt-2 line-clamp-2">I'm planning to travel abroad next summer. I think it would be great to...</p>
+                </div>
+              </div>
+              
+              <!-- 音乐生成历史 -->
+              <div class="history-item">
+                <div class="p-3">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800">轻松钢琴曲</h4>
+                      <div class="flex items-center mt-1">
+                        <span class="type-badge bg-indigo-100 text-indigo-600 mr-2">音乐生成</span>
+                        <p class="text-xs text-gray-500">6天前</p>
+                      </div>
+                    </div>
+                    <button class="text-gray-400">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center mt-2">
+                    <button class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white mr-3">
+                      <i class="fas fa-play text-xs"></i>
+                    </button>
+                    <div class="flex-1">
+                      <div class="h-1 bg-gray-200 rounded-full">
+                        <div class="h-1 bg-indigo-600 rounded-full" style="width: 35%"></div>
+                      </div>
+                      <div class="flex justify-between mt-1">
+                        <span class="text-xs text-gray-500">00:42</span>
+                        <span class="text-xs text-gray-500">02:15</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+    
+    // 为历史记录选项卡添加点击事件
+    document.querySelectorAll('.history-tabs button').forEach(button => {
+      button.addEventListener('click', function() {
+        document.querySelectorAll('.history-tabs button').forEach(btn => {
+          btn.classList.remove('active');
+          btn.classList.remove('bg-indigo-600');
+          btn.classList.remove('text-white');
+          btn.classList.add('bg-white');
+          btn.classList.add('text-gray-700');
+        });
+        
+        this.classList.add('active');
+        this.classList.add('bg-indigo-600');
+        this.classList.add('text-white');
+        this.classList.remove('bg-white');
+        this.classList.remove('text-gray-700');
+      });
+    });
+  </script>
+</body>
+</html> 

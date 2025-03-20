@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 行业动态</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 分类选项卡 */
+    .category-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .category-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 选项卡样式优化 */
+    .category-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .category-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .category-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 新闻卡片样式 */
+    .news-card {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .news-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 11px;
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #4F46E5;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+    
+    .tag.tag-policy {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #4F46E5;
+    }
+    
+    .tag.tag-tech {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10B981;
+    }
+    
+    .tag.tag-market {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: #F59E0B;
+    }
+    
+    .tag.tag-safety {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #EF4444;
+    }
+    
+    /* 搜索框样式 */
+    .search-bar {
+      background-color: #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-bar input {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      color: #1F2937;
+    }
+    
+    .search-bar input::placeholder {
+      color: #9CA3AF;
+    }
+    
+    /* 文章详情样式 */
+    .article-content {
+      line-height: 1.7;
+      color: #374151;
+    }
+    
+    .article-content p {
+      margin-bottom: 16px;
+    }
+    
+    .article-content h3 {
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: #1F2937;
+      font-size: 18px;
+    }
+    
+    /* 趋势图表样式 */
+    .trend-chart {
+      height: 160px;
+      position: relative;
+      margin-top: 20px;
+      padding-bottom: 20px;
+    }
+    
+    .chart-line {
+      position: absolute;
+      bottom: 30px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #e5e7eb;
+    }
+    
+    .trend-point {
+      position: absolute;
+      bottom: 30px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #6366F1;
+      transform: translate(-50%, 50%);
+    }
+    
+    .trend-point::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background-color: #6366F1;
+      transform: translateX(-50%);
+    }
+    
+    .trend-label {
+      position: absolute;
+      bottom: 0;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+    
+    /* 时间线样式 */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: #e5e7eb;
+    }
+    
+    .timeline-item {
+      position: relative;
+      padding-bottom: 20px;
+    }
+    
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+    
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: white;
+      border: 2px solid #6366F1;
+      z-index: 1;
+    }
+    
+    .timeline-date {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    
+    /* 专家卡片样式 */
+    .expert-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .expert-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">行业动态</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-bookmark text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 搜索框 -->
+          <div class="search-bar mb-4">
+            <i class="fas fa-search text-gray-400 mr-2"></i>
+            <input type="text" placeholder="搜索行业动态、政策法规...">
+            <i class="fas fa-filter text-gray-400 ml-2"></i>
+          </div>
+        
+          <!-- 分类选项卡 -->
+          <div class="category-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-newspaper mr-1"></i>资讯
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-gavel mr-1"></i>政策法规
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-chart-line mr-1"></i>市场分析
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-flask mr-1"></i>技术前沿
+            </button>
+          </div>
+          
+          <!-- 重点关注 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">重点关注</h2>
+              <a href="#" class="text-indigo-600 text-sm">更多</a>
+            </div>
+            
+            <!-- 焦点新闻 -->
+            <div class="relative overflow-hidden rounded-xl mb-4">
+              <img src="https://images.unsplash.com/photo-1581093196277-9f6aadbbade4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="新版安全生产法" class="w-full h-48 object-cover">
+              <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <div class="flex mb-2">
+                  <span class="tag tag-policy text-xs">政策法规</span>
+                </div>
+                <h3 class="text-white font-medium">新版《危险化学品安全管理条例》将于明年1月正式实施</h3>
+                <div class="flex items-center mt-1">
+                  <div class="text-white text-xs mr-4">
+                    <i class="fas fa-eye mr-1"></i>2,356次阅读
+                  </div>
+                  <div class="text-white text-xs">
+                    <i class="fas fa-clock mr-1"></i>今天 09:30
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 最新动态 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">最新动态</h2>
+              <a href="#" class="text-indigo-600 text-sm">查看全部</a>
+            </div>
+            
+            <div class="space-y-4">
+              <!-- 新闻卡片1 -->
+              <div class="news-card">
+                <div class="p-3">
+                  <div class="flex items-start">
+                    <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                      <img src="https://images.unsplash.com/photo-1581093497498-534154d4f25a?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="市场分析" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex flex-wrap">
+                        <span class="tag tag-market">市场分析</span>
+                      </div>
+                      <h3 class="font-medium text-gray-800 mt-1">2023年Q3化工行业市场分析报告：原料价格趋稳</h3>
+                      <div class="flex justify-between items-center mt-2">
+                        <div class="text-xs text-gray-500">
+                          <i class="fas fa-clock mr-1"></i>今天 14:25
+                        </div>
+                        <div class="flex items-center">
+                          <span class="text-xs text-gray-500 mr-2">
+                            <i class="fas fa-heart mr-1"></i>85
+                          </span>
+                          <span class="text-xs text-gray-500">
+                            <i class="fas fa-comment mr-1"></i>32
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 新闻卡片2 -->
+              <div class="news-card">
+                <div class="p-3">
+                  <div class="flex items-start">
+                    <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                      <img src="https://images.unsplash.com/photo-1581093458755-bf660a65e25b?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="安全事故" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex flex-wrap">
+                        <span class="tag tag-safety">安全通报</span>
+                      </div>
+                      <h3 class="font-medium text-gray-800 mt-1">某化工厂因违规操作被罚款50万元，多项安全隐患曝光</h3>
+                      <div class="flex justify-between items-center mt-2">
+                        <div class="text-xs text-gray-500">
+                          <i class="fas fa-clock mr-1"></i>昨天 16:45
+                        </div>
+                        <div class="flex items-center">
+                          <span class="text-xs text-gray-500 mr-2">
+                            <i class="fas fa-heart mr-1"></i>146
+                          </span>
+                          <span class="text-xs text-gray-500">
+                            <i class="fas fa-comment mr-1"></i>78
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 新闻卡片3 -->
+              <div class="news-card">
+                <div class="p-3">
+                  <div class="flex items-start">
+                    <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                      <img src="https://images.unsplash.com/photo-1581094487827-7932aa9348bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="新技术" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex flex-wrap">
+                        <span class="tag tag-tech">技术前沿</span>
+                      </div>
+                      <h3 class="font-medium text-gray-800 mt-1">新型绿色催化剂研发成功，碳排放有望降低30%</h3>
+                      <div class="flex justify-between items-center mt-2">
+                        <div class="text-xs text-gray-500">
+                          <i class="fas fa-clock mr-1"></i>2天前
+                        </div>
+                        <div class="flex items-center">
+                          <span class="text-xs text-gray-500 mr-2">
+                            <i class="fas fa-heart mr-1"></i>235
+                          </span>
+                          <span class="text-xs text-gray-500">
+                            <i class="fas fa-comment mr-1"></i>94
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 政策法规解读 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">政策法规解读</h2>
+              <a href="#" class="text-indigo-600 text-sm">更多解读</a>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-sm">
+              <div class="mb-3">
+                <span class="tag tag-policy">政策解读</span>
+                <h3 class="text-lg font-medium text-gray-800 mt-1">《危险化学品经营许可证管理办法》要点解析</h3>
+                <p class="text-sm text-gray-500 mt-1">本文详细解读新版管理办法中企业需要重点关注的变化和应对策略</p>
+              </div>
+              
+              <div class="timeline mb-4">
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-date">2023年10月1日</div>
+                  <div class="text-sm text-gray-700">《危险化学品经营许可证管理办法》正式实施</div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-date">2023年12月31日前</div>
+                  <div class="text-sm text-gray-700">企业需完成安全评估报告提交</div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-date">2024年6月30日前</div>
+                  <div class="text-sm text-gray-700">所有企业须完成许可证更新</div>
+                </div>
+              </div>
+              
+              <button class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium">查看完整解读</button>
+            </div>
+          </div>
+          
+          <!-- 行业专家观点 -->
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">专家观点</h2>
+              <a href="#" class="text-indigo-600 text-sm">更多专家</a>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 shadow-sm">
+              <div class="mb-4">
+                <div class="expert-card">
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="专家头像" class="expert-avatar">
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-800">张教授</h4>
+                    <p class="text-xs text-gray-500">中国化工学会 理事长</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="article-content text-sm">
+                <p>近期全球化工行业正处于转型期，绿色化工、数字化转型和创新材料将成为未来五年的主要发展方向。</p>
+                <p>中国化工企业应当把握国家双碳战略带来的机遇，积极推进技术创新和产业升级，特别是在以下几个方面...</p>
+              </div>
+              
+              <div class="mt-4 flex justify-between">
+                <a href="#" class="text-indigo-600 text-sm">阅读全文</a>
+                <div class="flex text-gray-500 text-sm">
+                  <span class="mr-3"><i class="far fa-thumbs-up mr-1"></i>128</span>
+                  <span><i class="far fa-comment mr-1"></i>36</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+    
+    // 选项卡切换
+    const tabButtons = document.querySelectorAll('.category-tabs button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+        tabButtons.forEach(btn => btn.classList.add('bg-white', 'text-gray-700'));
+        button.classList.remove('bg-white', 'text-gray-700');
+        button.classList.add('active', 'bg-indigo-600', 'text-white');
+      });
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 语音识别</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 识别类型选项卡 */
+    .recognition-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .recognition-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 识别类型选项卡样式优化 */
+    .recognition-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .recognition-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .recognition-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 录音区域 */
+    .record-area {
+      border-radius: 16px;
+      transition: all 0.3s;
+    }
+    
+    .record-button {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: #6366F1;
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s;
+    }
+    
+    .record-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
+    }
+    
+    .record-button.recording {
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+      }
+    }
+    
+    /* 波形可视化 */
+    .wave-visualization {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .wave-bar {
+      width: 3px;
+      background-color: #6366F1;
+      border-radius: 1.5px;
+      margin: 0 2px;
+    }
+    
+    /* 转写结果项目 */
+    .result-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .result-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: rgba(99, 102, 241, 0.1);
+      color: #6366F1;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    
+    /* 历史记录样式 */
+    .history-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .history-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 进度条样式 */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: #6366F1;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">语音识别</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-history text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 识别类型选项卡 -->
+          <div class="recognition-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-microphone mr-1"></i>语音转文字
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-language mr-1"></i>多语种翻译
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-file-audio mr-1"></i>音频提取
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-volume-up mr-1"></i>声音增强
+            </button>
+          </div>
+          
+          <!-- 录音区域 - 初始状态 -->
+          <div id="recordContainer" class="mb-6">
+            <div class="record-area flex flex-col items-center justify-center py-10 px-4 bg-white rounded-xl">
+              <h3 class="text-lg font-medium text-gray-800 mb-4">点击开始录制语音</h3>
+              <p class="text-gray-500 text-sm text-center mb-6">支持普通话、英语、粤语等多种语言</p>
+              
+              <button id="recordButton" class="record-button flex items-center justify-center mb-4">
+                <i class="fas fa-microphone text-white text-2xl"></i>
+              </button>
+              
+              <p id="recordStatus" class="text-sm font-medium text-gray-500">点击按钮开始录音</p>
+              
+              <div id="waveVisualization" class="wave-visualization w-full mt-6 hidden">
+                <!-- 波形图将通过JS动态生成 -->
+              </div>
+              
+              <div id="recordControls" class="mt-6 hidden">
+                <div class="flex space-x-4">
+                  <button class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                    <i class="fas fa-stop mr-2"></i>
+                    停止
+                  </button>
+                  <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                    <i class="fas fa-pause mr-2"></i>
+                    暂停
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 识别结果 - 录音后显示 -->
+          <div id="resultContainer" class="hidden mb-6">
+            <!-- 识别进度 -->
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">转写进度</span>
+                <span class="text-sm text-indigo-600">100%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-value" style="width: 100%;"></div>
+              </div>
+            </div>
+            
+            <!-- 识别结果 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">识别结果</h3>
+              
+              <div class="result-item p-4">
+                <p class="text-gray-800 leading-relaxed">
+                  今天的天气非常好，阳光明媚。我打算下午去公园散步，可能会在那里呆上几个小时。如果有时间的话，我还会去咖啡厅看一会儿书。最近我在学习人工智能相关的知识，感觉非常有趣。
+                </p>
+                <div class="flex justify-between items-center mt-3 text-sm text-gray-500">
+                  <span>普通话 | 准确率: 98%</span>
+                  <span>00:32</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 语义分析 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">语义分析</h3>
+              
+              <div class="space-y-3">
+                <div class="result-item p-3">
+                  <h4 class="font-medium text-gray-800 mb-2">关键词提取</h4>
+                  <div class="flex flex-wrap">
+                    <span class="tag">天气</span>
+                    <span class="tag">公园</span>
+                    <span class="tag">散步</span>
+                    <span class="tag">咖啡厅</span>
+                    <span class="tag">人工智能</span>
+                  </div>
+                </div>
+                <div class="result-item p-3">
+                  <h4 class="font-medium text-gray-800 mb-2">情感分析</h4>
+                  <div class="flex items-center">
+                    <div class="w-4/5 h-2 bg-gray-200 rounded-full mr-3">
+                      <div class="h-2 bg-green-500 rounded-full" style="width: 85%"></div>
+                    </div>
+                    <span class="text-sm text-gray-600">积极 85%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex space-x-3 mb-6">
+              <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium">
+                <i class="fas fa-copy mr-2"></i>复制文本
+              </button>
+              <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium">
+                <i class="fas fa-share-alt mr-2"></i>分享结果
+              </button>
+            </div>
+          </div>
+          
+          <!-- 识别历史记录 -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">识别历史</h2>
+              <a href="history.html" class="text-indigo-600 text-sm">查看全部</a>
+            </div>
+            
+            <div class="space-y-3">
+              <!-- 历史记录1 -->
+              <div class="history-item overflow-hidden">
+                <div class="p-3">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 class="font-medium text-gray-800">会议记录</h4>
+                      <p class="text-xs text-gray-500">00:15:32 | 普通话</p>
+                    </div>
+                    <span class="text-xs text-gray-500">昨天</span>
+                  </div>
+                  <p class="text-sm text-gray-700 line-clamp-2">本次会议我们讨论了第三季度的销售目标和市场策略，大家提出了很多有价值的建议...</p>
+                </div>
+              </div>
+              
+              <!-- 历史记录2 -->
+              <div class="history-item overflow-hidden">
+                <div class="p-3">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 class="font-medium text-gray-800">英语练习</h4>
+                      <p class="text-xs text-gray-500">00:03:45 | 英语</p>
+                    </div>
+                    <span class="text-xs text-gray-500">3天前</span>
+                  </div>
+                  <p class="text-sm text-gray-700 line-clamp-2">I'm planning to travel abroad next summer. I think it would be great to...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 相关功能推荐 -->
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">相关功能</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-comment-dots text-blue-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">文字转语音</h3>
+                <p class="text-xs text-gray-500">将文字转为自然人声</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-music text-purple-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">背景音乐提取</h3>
+                <p class="text-xs text-gray-500">从音频中分离背景音乐</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-file-alt text-green-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">语音转文档</h3>
+                <p class="text-xs text-gray-500">生成格式化文档</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-language text-yellow-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">实时翻译</h3>
+                <p class="text-xs text-gray-500">多语言实时翻译对话</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    /**
+     * 生成波形图可视化效果
+     */
+    function generateWaveVisualization() {
+      const waveContainer = document.getElementById('waveVisualization');
+      waveContainer.innerHTML = '';
+      
+      // 生成随机高度的波形条
+      for (let i = 0; i < 50; i++) {
+        const height = Math.floor(Math.random() * 40) + 5; // 5-45px高度
+        const bar = document.createElement('div');
+        bar.className = 'wave-bar';
+        bar.style.height = `${height}px`;
+        waveContainer.appendChild(bar);
+      }
+    }
+    
+    // 录音按钮点击事件
+    document.getElementById('recordButton').addEventListener('click', function() {
+      const recordContainer = document.getElementById('recordContainer');
+      const resultContainer = document.getElementById('resultContainer');
+      const recordButton = document.getElementById('recordButton');
+      const recordStatus = document.getElementById('recordStatus');
+      const recordControls = document.getElementById('recordControls');
+      const waveVisualization = document.getElementById('waveVisualization');
+      
+      if (recordButton.classList.contains('recording')) {
+        // 停止录音
+        recordButton.classList.remove('recording');
+        recordStatus.textContent = '点击按钮开始录音';
+        recordControls.classList.add('hidden');
+        waveVisualization.classList.add('hidden');
+        
+        // 显示结果
+        recordContainer.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+        
+        // 模拟识别进度
+        const progressBar = document.querySelector('.progress-value');
+        progressBar.style.width = '0%';
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          progressBar.style.width = progress + '%';
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+          }
+        }, 100);
+      } else {
+        // 开始录音
+        recordButton.classList.add('recording');
+        recordStatus.textContent = '正在录音...';
+        recordControls.classList.remove('hidden');
+        waveVisualization.classList.remove('hidden');
+        
+        // 生成波形可视化
+        generateWaveVisualization();
+        
+        // 模拟实时更新波形
+        setInterval(generateWaveVisualization, 200);
+      }
+    });
+    
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

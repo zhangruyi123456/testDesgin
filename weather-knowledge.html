@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 化工天气晴雨表</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 分类选项卡 */
+    .category-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .category-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 选项卡样式优化 */
+    .category-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .category-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .category-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 知识卡片样式 */
+    .knowledge-card {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .knowledge-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 11px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+    
+    .tag.tag-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: #F59E0B;
+    }
+    
+    .tag.tag-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #EF4444;
+    }
+    
+    .tag.tag-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: #3B82F6;
+    }
+    
+    .tag.tag-chemical {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10B981;
+    }
+    
+    /* 搜索框样式 */
+    .search-bar {
+      background-color: #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-bar input {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      color: #1F2937;
+    }
+    
+    .search-bar input::placeholder {
+      color: #9CA3AF;
+    }
+    
+    /* 气象预警标志 */
+    .weather-alert {
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background-color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .weather-alert::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+    
+    .weather-alert.alert-yellow::before {
+      background-color: #F59E0B;
+    }
+    
+    .weather-alert.alert-orange::before {
+      background-color: #F97316;
+    }
+    
+    .weather-alert.alert-red::before {
+      background-color: #EF4444;
+    }
+    
+    /* 气象指标卡片 */
+    .weather-metric {
+      background-color: white;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .weather-metric .value {
+      font-size: 28px;
+      font-weight: 500;
+      margin: 6px 0;
+    }
+    
+    .weather-metric .label {
+      font-size: 12px;
+      color: #6B7280;
+    }
+    
+    /* 晴雨表格样式 */
+    .weather-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .weather-table th {
+      background-color: #F3F4F6;
+      padding: 10px;
+      text-align: left;
+      font-weight: 500;
+      color: #4B5563;
+      font-size: 13px;
+    }
+    
+    .weather-table td {
+      padding: 12px 10px;
+      border-top: 1px solid #F3F4F6;
+      font-size: 13px;
+      color: #1F2937;
+    }
+    
+    /* 知识标签云样式 */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .knowledge-tag {
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      background-color: white;
+      color: #4B5563;
+      border: 1px solid #E5E7EB;
+      transition: all 0.2s ease;
+    }
+    
+    .knowledge-tag:active,
+    .knowledge-tag.active {
+      background-color: #6366F1;
+      color: white;
+      border-color: #6366F1;
+    }
+    
+    /* 趋势图表样式 */
+    .trend-chart {
+      height: 120px;
+      position: relative;
+      margin: 24px 0 10px;
+    }
+    
+    .chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: #e5e7eb;
+    }
+    
+    .trend-point {
+      position: absolute;
+      bottom: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #6366F1;
+      transform: translate(-50%, 50%);
+    }
+    
+    .trend-point::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background-color: #6366F1;
+      transform: translateX(-50%);
+    }
+    
+    .trend-label {
+      position: absolute;
+      bottom: -20px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #6b7280;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+    
+    /* 风险等级指示器 */
+    .risk-level {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .risk-low {
+      background-color: #DCFCE7;
+      color: #15803D;
+    }
+    
+    .risk-medium {
+      background-color: #FEF9C3;
+      color: #A16207;
+    }
+    
+    .risk-high {
+      background-color: #FEE2E2;
+      color: #B91C1C;
+    }
+    
+    .risk-very-high {
+      background-color: #B91C1C;
+      color: white;
+    }
+    
+    /* 工艺条件进度条样式 */
+    .condition-bar {
+      width: 100%;
+      height: 8px;
+      background-color: #F3F4F6;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 4px 0;
+    }
+    
+    .condition-value {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .condition-safe {
+      background-color: #10B981;
+    }
+    
+    .condition-warning {
+      background-color: #F59E0B;
+    }
+    
+    .condition-danger {
+      background-color: #EF4444;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">化工天气晴雨表</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-bell text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 搜索框 -->
+          <div class="search-bar mb-4">
+            <i class="fas fa-search text-gray-400 mr-2"></i>
+            <input type="text" placeholder="搜索化学品名称、安全知识或操作指南">
+            <i class="fas fa-sliders-h text-gray-400 ml-2"></i>
+          </div>
+        
+          <!-- 分类选项卡 -->
+          <div class="category-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-cloud-sun-rain mr-1"></i>安全预警
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-flask mr-1"></i>工艺监控
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-tags mr-1"></i>知识标签
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-book mr-1"></i>安全手册
+            </button>
+          </div>
+          
+          <!-- 今日预警 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">今日预警</h2>
+              <span class="text-xs text-white bg-red-500 px-2 py-1 rounded-full">3 条重要预警</span>
+            </div>
+            
+            <!-- 预警卡片 -->
+            <div class="weather-alert alert-red p-3 shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center mb-1">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                    <span class="font-medium text-gray-800">高温预警 - 红色</span>
+                  </div>
+                  <p class="text-sm text-gray-600">今日最高温度将达38℃，请注意易燃易爆品储存安全，加强通风降温</p>
+                </div>
+                <span class="text-xs text-gray-500">10:15</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <div class="flex space-x-1">
+                  <span class="tag tag-danger">重要</span>
+                  <span class="tag tag-warning">高温</span>
+                </div>
+                <a href="#" class="text-xs text-indigo-600">查看详情</a>
+              </div>
+            </div>
+            
+            <div class="weather-alert alert-orange p-3 mt-3 shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center mb-1">
+                    <i class="fas fa-wind text-orange-500 mr-2"></i>
+                    <span class="font-medium text-gray-800">大风预警 - 橙色</span>
+                  </div>
+                  <p class="text-sm text-gray-600">预计今日风力可达7-8级，请注意户外设备安全固定，防止物料飞扬</p>
+                </div>
+                <span class="text-xs text-gray-500">09:30</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <div class="flex space-x-1">
+                  <span class="tag tag-warning">重要</span>
+                  <span class="tag tag-warning">大风</span>
+                </div>
+                <a href="#" class="text-xs text-indigo-600">查看详情</a>
+              </div>
+            </div>
+            
+            <div class="weather-alert alert-yellow p-3 mt-3 shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center mb-1">
+                    <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                    <span class="font-medium text-gray-800">雷电预警 - 黄色</span>
+                  </div>
+                  <p class="text-sm text-gray-600">今日下午可能有雷雨天气，请确保避雷设施工作正常，暂停户外电气作业</p>
+                </div>
+                <span class="text-xs text-gray-500">08:45</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <div class="flex space-x-1">
+                  <span class="tag tag-warning">雷电</span>
+                </div>
+                <a href="#" class="text-xs text-indigo-600">查看详情</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 工艺条件 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">工艺安全指数</h2>
+              <a href="#" class="text-indigo-600 text-sm">更多详情</a>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div class="weather-metric">
+                <div class="text-yellow-500">
+                  <i class="fas fa-temperature-high text-lg"></i>
+                </div>
+                <div class="value text-yellow-600">36.8°C</div>
+                <div class="label">车间温度</div>
+              </div>
+              
+              <div class="weather-metric">
+                <div class="text-blue-500">
+                  <i class="fas fa-tint text-lg"></i>
+                </div>
+                <div class="value text-blue-600">68%</div>
+                <div class="label">空气湿度</div>
+              </div>
+              
+              <div class="weather-metric">
+                <div class="text-green-500">
+                  <i class="fas fa-wind text-lg"></i>
+                </div>
+                <div class="value text-green-600">4级</div>
+                <div class="label">风力</div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="font-medium text-gray-800">反应釜A1温度</h3>
+                <div class="risk-level risk-medium">中风险</div>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                <span>当前: 125℃</span>
+                <span>标准范围: 110-130℃</span>
+              </div>
+              <div class="condition-bar">
+                <div class="condition-value condition-warning" style="width: 75%"></div>
+              </div>
+              
+              <div class="flex justify-between items-center mb-2 mt-4">
+                <h3 class="font-medium text-gray-800">储罐B2压力</h3>
+                <div class="risk-level risk-low">低风险</div>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                <span>当前: 1.6MPa</span>
+                <span>标准范围: 1.2-2.5MPa</span>
+              </div>
+              <div class="condition-bar">
+                <div class="condition-value condition-safe" style="width: 40%"></div>
+              </div>
+              
+              <div class="flex justify-between items-center mb-2 mt-4">
+                <h3 class="font-medium text-gray-800">管道C3流速</h3>
+                <div class="risk-level risk-high">高风险</div>
+              </div>
+              <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                <span>当前: 3.2m/s</span>
+                <span>标准范围: 1.5-2.8m/s</span>
+              </div>
+              <div class="condition-bar">
+                <div class="condition-value condition-danger" style="width: 90%"></div>
+              </div>
+              
+              <!-- 趋势图 -->
+              <div class="mt-6">
+                <h3 class="font-medium text-gray-800 mb-2">24小时趋势</h3>
+                <div class="trend-chart">
+                  <div class="chart-line"></div>
+                  <!-- 温度趋势点 -->
+                  <div class="trend-point" style="left: 5%; bottom: 30px;"></div>
+                  <div class="trend-point" style="left: 15%; bottom: 25px;"></div>
+                  <div class="trend-point" style="left: 25%; bottom: 40px;"></div>
+                  <div class="trend-point" style="left: 35%; bottom: 50px;"></div>
+                  <div class="trend-point" style="left: 45%; bottom: 70px;"></div>
+                  <div class="trend-point" style="left: 55%; bottom: 55px;"></div>
+                  <div class="trend-point" style="left: 65%; bottom: 60px;"></div>
+                  <div class="trend-point" style="left: 75%; bottom: 75px;"></div>
+                  <div class="trend-point" style="left: 85%; bottom: 50px;"></div>
+                  <div class="trend-point" style="left: 95%; bottom: 40px;"></div>
+                  
+                  <!-- 时间标签 -->
+                  <div class="trend-label" style="left: 5%;">00:00</div>
+                  <div class="trend-label" style="left: 25%;">06:00</div>
+                  <div class="trend-label" style="left: 45%;">12:00</div>
+                  <div class="trend-label" style="left: 65%;">18:00</div>
+                  <div class="trend-label" style="left: 85%;">23:00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 知识标签库 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">知识标签库</h2>
+              <a href="#" class="text-indigo-600 text-sm">全部标签</a>
+            </div>
+            
+            <!-- 标签云 -->
+            <div class="tag-cloud">
+              <div class="knowledge-tag active">安全规范</div>
+              <div class="knowledge-tag">危险化学品</div>
+              <div class="knowledge-tag">应急处理</div>
+              <div class="knowledge-tag">设备维护</div>
+              <div class="knowledge-tag">质量控制</div>
+              <div class="knowledge-tag">环保要求</div>
+              <div class="knowledge-tag">操作手册</div>
+              <div class="knowledge-tag">健康防护</div>
+              <div class="knowledge-tag">储存运输</div>
+            </div>
+            
+            <!-- 相关知识 -->
+            <div class="space-y-3">
+              <div class="knowledge-card p-3">
+                <div class="flex items-start">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0 bg-indigo-100 flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-indigo-600"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex flex-wrap mb-1">
+                      <span class="tag tag-info">安全规范</span>
+                    </div>
+                    <h3 class="font-medium text-gray-800">化工企业高温作业安全规程</h3>
+                    <div class="flex justify-between items-center mt-2">
+                      <div class="text-xs text-gray-500">
+                        <i class="fas fa-eye mr-1"></i>1,245次查看
+                      </div>
+                      <a href="#" class="text-xs text-indigo-600">查看详情</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="knowledge-card p-3">
+                <div class="flex items-start">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0 bg-red-100 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex flex-wrap mb-1">
+                      <span class="tag tag-danger">危险化学品</span>
+                      <span class="tag tag-info">安全规范</span>
+                    </div>
+                    <h3 class="font-medium text-gray-800">易燃易爆化学品高温条件下的储存要求</h3>
+                    <div class="flex justify-between items-center mt-2">
+                      <div class="text-xs text-gray-500">
+                        <i class="fas fa-eye mr-1"></i>2,178次查看
+                      </div>
+                      <a href="#" class="text-xs text-indigo-600">查看详情</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="knowledge-card p-3">
+                <div class="flex items-start">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0 bg-yellow-100 flex items-center justify-center">
+                    <i class="fas fa-hard-hat text-yellow-600"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex flex-wrap mb-1">
+                      <span class="tag tag-warning">应急处理</span>
+                      <span class="tag tag-info">安全规范</span>
+                    </div>
+                    <h3 class="font-medium text-gray-800">化工厂高温天气应急预案操作指南</h3>
+                    <div class="flex justify-between items-center mt-2">
+                      <div class="text-xs text-gray-500">
+                        <i class="fas fa-eye mr-1"></i>1,567次查看
+                      </div>
+                      <a href="#" class="text-xs text-indigo-600">查看详情</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 安全晴雨表 -->
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">安全晴雨表</h2>
+              <a href="#" class="text-indigo-600 text-sm">历史数据</a>
+            </div>
+            
+            <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+              <table class="weather-table">
+                <thead>
+                  <tr>
+                    <th>时段</th>
+                    <th>安全指数</th>
+                    <th>风险等级</th>
+                    <th>主要影响</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>今日</td>
+                    <td>
+                      <div class="flex items-center">
+                        <span class="font-medium mr-1">68</span>
+                        <i class="fas fa-arrow-down text-red-500 text-xs"></i>
+                      </div>
+                    </td>
+                    <td><span class="risk-level risk-high">高风险</span></td>
+                    <td>高温、大风</td>
+                  </tr>
+                  <tr>
+                    <td>明日</td>
+                    <td>
+                      <div class="flex items-center">
+                        <span class="font-medium mr-1">72</span>
+                        <i class="fas fa-arrow-up text-green-500 text-xs"></i>
+                      </div>
+                    </td>
+                    <td><span class="risk-level risk-medium">中风险</span></td>
+                    <td>雷电</td>
+                  </tr>
+                  <tr>
+                    <td>后天</td>
+                    <td>
+                      <div class="flex items-center">
+                        <span class="font-medium mr-1">85</span>
+                        <i class="fas fa-arrow-up text-green-500 text-xs"></i>
+                      </div>
+                    </td>
+                    <td><span class="risk-level risk-low">低风险</span></td>
+                    <td>多云</td>
+                  </tr>
+                  <tr>
+                    <td>周五</td>
+                    <td>
+                      <div class="flex items-center">
+                        <span class="font-medium mr-1">81</span>
+                        <i class="fas fa-arrow-down text-red-500 text-xs"></i>
+                      </div>
+                    </td>
+                    <td><span class="risk-level risk-low">低风险</span></td>
+                    <td>轻微降雨</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+    
+    // 选项卡切换
+    const tabButtons = document.querySelectorAll('.category-tabs button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+        tabButtons.forEach(btn => btn.classList.add('bg-white', 'text-gray-700'));
+        button.classList.remove('bg-white', 'text-gray-700');
+        button.classList.add('active', 'bg-indigo-600', 'text-white');
+      });
+    });
+    
+    // 知识标签切换
+    const knowledgeTags = document.querySelectorAll('.knowledge-tag');
+    knowledgeTags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        knowledgeTags.forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html> 

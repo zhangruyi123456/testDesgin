@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 首页</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-gray-50">
+  <!-- 状态栏 - 固定定位 -->
+  <div class="status-bar">
+    <span>20:30</span>
+    <div class="flex items-center space-x-1">
+      <i class="fas fa-signal"></i>
+      <i class="fas fa-wifi"></i>
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+
+  <!-- 主内容区 - 添加上边距 -->
+  <div class="p-4 pb-20 status-bar-only-spacing">
+    <!-- 欢迎区域 -->
+    <div class="mb-6 fade-in">
+      <h1 class="text-2xl font-bold text-gray-800">嗨，欢迎回来👋</h1>
+      <p class="text-gray-600 mt-1">发现智能AI工具的无限可能</p>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="relative mb-6 fade-in">
+      <input type="text" placeholder="搜索AI工具..." class="w-full bg-white rounded-full py-3 px-5 pr-10 shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <button class="absolute right-3 top-3 text-gray-400">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+
+    <!-- 热门工具 -->
+    <div class="mb-6 fade-in">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">热门工具</h2>
+      <div class="grid grid-cols-4 gap-3">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+            <i class="fas fa-comment-dots text-blue-600 text-xl"></i>
+          </div>
+          <span class="text-xs text-gray-700">AI助手</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+            <i class="fas fa-image text-purple-600 text-xl"></i>
+          </div>
+          <span class="text-xs text-gray-700">图像生成</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-2">
+            <i class="fas fa-language text-green-600 text-xl"></i>
+          </div>
+          <span class="text-xs text-gray-700">翻译</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+            <i class="fas fa-microphone text-yellow-600 text-xl"></i>
+          </div>
+          <span class="text-xs text-gray-700">语音识别</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 精选推荐 -->
+    <div class="mb-6 fade-in">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-gray-800">精选推荐</h2>
+        <a href="#" class="text-indigo-600 text-sm">查看全部</a>
+      </div>
+      
+      <div class="space-y-4">
+        <!-- 推荐卡片1 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+            <i class="fas fa-robot text-indigo-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">AI文案助手</h3>
+            <p class="text-xs text-gray-500">快速生成高质量营销文案</p>
+          </div>
+          <div class="bg-indigo-50 text-indigo-600 text-xs px-2 py-1 rounded-full">热门</div>
+        </div>
+
+        <!-- 推荐卡片2 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mr-4">
+            <i class="fas fa-paint-brush text-pink-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">AI艺术创作</h3>
+            <p class="text-xs text-gray-500">将文字描述转化为艺术作品</p>
+          </div>
+          <div class="bg-pink-50 text-pink-600 text-xs px-2 py-1 rounded-full">新功能</div>
+        </div>
+
+        <!-- 推荐卡片3 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+            <i class="fas fa-music text-blue-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">AI音乐生成</h3>
+            <p class="text-xs text-gray-500">根据风格生成原创音乐</p>
+          </div>
+          <div class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full">测试版</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 最近使用 -->
+    <div class="mb-6 fade-in">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-gray-800">最近使用</h2>
+        <a href="#" class="text-indigo-600 text-sm">查看历史</a>
+      </div>
+      
+      <div class="space-y-3">
+        <!-- 最近使用卡片1 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+            <i class="fas fa-file-alt text-green-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">文本摘要</h3>
+            <p class="text-xs text-gray-500">智能提取文档关键信息</p>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-500">3分钟前</span>
+            <div class="mt-1 text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full">完成</div>
+          </div>
+        </div>
+
+        <!-- 最近使用卡片2 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+            <i class="fas fa-language text-purple-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">中英互译</h3>
+            <p class="text-xs text-gray-500">专业文档双语转换</p>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-500">昨天</span>
+            <div class="mt-1 text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full">完成</div>
+          </div>
+        </div>
+        
+        <!-- 最近使用卡片3 -->
+        <div class="ai-card p-4 flex items-center">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+            <i class="fas fa-image text-blue-600 text-xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-base font-medium text-gray-800">图片识别</h3>
+            <p class="text-xs text-gray-500">识别图像中的6个物体</p>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-500">2天前</span>
+            <div class="mt-1 text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">已保存</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工具卡片列表 -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <!-- 图片识别工具卡片 -->
+      <a href="image-recognition.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-image text-2xl text-indigo-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">图片识别</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">图像内容智能识别</p>
+      </a>
+      
+      <!-- 语音识别工具卡片 -->
+      <a href="voice-recognition.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-microphone text-2xl text-purple-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">语音转文字</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">语音内容快速转写</p>
+      </a>
+      
+      <!-- 化工图片分析工具卡片 -->
+      <a href="image-analysis.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-flask text-2xl text-blue-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">化工图片分析</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">化工设备安全检测</p>
+      </a>
+      
+      <!-- 化工文档分析工具卡片 -->
+      <a href="document-analysis.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-file-alt text-2xl text-green-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">化工文档分析</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">规范文档智能解析</p>
+      </a>
+      
+      <!-- 化工培训与考试工具卡片 -->
+      <a href="chemical-training.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-graduation-cap text-2xl text-red-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">化工培训与考试</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">专业学习和认证系统</p>
+      </a>
+      
+      <!-- 行业动态工具卡片 -->
+      <a href="chemical-news.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-newspaper text-2xl text-yellow-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">行业动态</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">化工新闻与政策解读</p>
+      </a>
+      
+      <!-- 化工天气晴雨表工具卡片 -->
+      <a href="weather-knowledge.html" class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center">
+        <div class="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-cloud-sun-rain text-2xl text-teal-600"></i>
+        </div>
+        <h3 class="text-base font-medium text-center">化工天气晴雨表</h3>
+        <p class="text-xs text-gray-500 text-center mt-1">安全预警与知识库</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html> 

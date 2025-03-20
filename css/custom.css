@@ -1,0 +1,166 @@
+/* 自定义样式 */
+:root {
+  --primary-color: #4f46e5;
+  --secondary-color: #8b5cf6;
+  --background-color: #f9fafb;
+  --card-bg: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+/* 隐藏全局滚动条但保留滚动功能 */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 为所有可滚动容器隐藏滚动条 */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* 确保可滚动区域保持触摸滚动功能 */
+.overflow-y-auto, .overflow-x-auto, .overflow-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+}
+
+/* iPhone 模拟器样式 */
+.iphone-frame {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  background-color: #000;
+  border-radius: 40px;
+  padding: 10px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin: 40px auto;
+  overflow: hidden;
+}
+
+.iphone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--background-color);
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.iphone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 30px;
+  background-color: #000;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  z-index: 10;
+}
+
+.iphone-content-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding-top: 30px;
+  padding-bottom: 70px;
+  overflow: hidden;
+}
+
+.iphone-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 5px;
+  background-color: #000;
+  border-radius: 3px;
+  z-index: 10;
+}
+
+/* 顶部状态栏和导航栏固定样式 */
+.status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background-color: var(--background-color);
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.app-header {
+  position: fixed;
+  top: 24px;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: #ffffff;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 添加内容区域的上边距，避免被固定头部遮挡 */
+.fixed-header-spacing {
+  padding-top: 80px; /* 状态栏+导航栏高度 */
+}
+
+/* 只有状态栏没有导航栏的页面 */
+.status-bar-only-spacing {
+  padding-top: 24px; /* 只有状态栏高度 */
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 卡片样式 */
+.ai-card {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ai-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+} 

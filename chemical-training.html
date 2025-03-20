@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 化工培训与考试</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 分类选项卡 */
+    .category-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .category-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 选项卡样式优化 */
+    .category-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .category-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .category-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 课程卡片样式 */
+    .course-card {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .course-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 12px;
+      margin-right: 6px;
+      display: inline-block;
+    }
+    
+    /* 难度标签 */
+    .difficulty-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .difficulty-easy {
+      background-color: #DCFCE7;
+      color: #15803D;
+    }
+    
+    .difficulty-medium {
+      background-color: #FEF9C3;
+      color: #A16207;
+    }
+    
+    .difficulty-hard {
+      background-color: #FEE2E2;
+      color: #B91C1C;
+    }
+    
+    /* 进度条样式 */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: #4F46E5;
+      transition: width 0.3s ease;
+    }
+    
+    /* 搜索框样式 */
+    .search-bar {
+      background-color: #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-bar input {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      color: #1F2937;
+    }
+    
+    .search-bar input::placeholder {
+      color: #9CA3AF;
+    }
+    
+    /* 练习题样式 */
+    .question-card {
+      border-radius: 12px;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+    
+    .option-item {
+      padding: 12px 16px;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .option-item:hover, .option-item.selected {
+      border-color: #6366F1;
+      background-color: rgba(99, 102, 241, 0.05);
+    }
+    
+    .option-item.correct {
+      border-color: #10B981;
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+    
+    .option-item.incorrect {
+      border-color: #EF4444;
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+    
+    /* 证书样式 */
+    .certificate-card {
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      background-color: white;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .certificate-card:hover {
+      border-color: #6366F1;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* 考试时钟样式 */
+    .exam-timer {
+      font-size: 18px;
+      font-weight: 600;
+      color: #374151;
+      background: linear-gradient(to right, #F3F4F6, #E5E7EB);
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .exam-timer i {
+      color: #EF4444;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">化工培训与考试</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-history text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 搜索框 -->
+          <div class="search-bar mb-4">
+            <i class="fas fa-search text-gray-400 mr-2"></i>
+            <input type="text" placeholder="搜索培训课程、证书或试题">
+            <i class="fas fa-microphone text-gray-400 ml-2"></i>
+          </div>
+        
+          <!-- 分类选项卡 -->
+          <div class="category-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-book-open mr-1"></i>培训课程
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-clipboard-check mr-1"></i>在线考试
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-certificate mr-1"></i>证书管理
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-graduation-cap mr-1"></i>学习记录
+            </button>
+          </div>
+          
+          <!-- 推荐培训课程 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">推荐课程</h2>
+              <a href="#" class="text-indigo-600 text-sm">查看全部</a>
+            </div>
+            
+            <!-- 轮播课程 -->
+            <div class="relative overflow-hidden rounded-xl mb-4">
+              <img src="https://images.unsplash.com/photo-1581093458791-9283ef3cc2db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="化工安全培训" class="w-full h-40 object-cover">
+              <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <span class="difficulty-badge difficulty-medium inline-block mb-2">中级</span>
+                <h3 class="text-white font-medium">化工安全操作规范专项培训</h3>
+                <div class="flex items-center mt-1">
+                  <div class="text-white text-xs mr-4">
+                    <i class="fas fa-user-graduate mr-1"></i>3,245人学习
+                  </div>
+                  <div class="text-white text-xs">
+                    <i class="fas fa-clock mr-1"></i>8小时课程
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 课程列表 -->
+            <div class="space-y-4">
+              <!-- 课程卡片1 -->
+              <div class="course-card p-3">
+                <div class="flex items-start">
+                  <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1581093458791-9283ef3cc2db?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="危险化学品" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex justify-between">
+                      <span class="difficulty-badge difficulty-easy">初级</span>
+                      <span class="text-xs text-gray-500">4.8 <i class="fas fa-star text-yellow-400"></i></span>
+                    </div>
+                    <h3 class="font-medium text-gray-800 mt-1">危险化学品使用安全</h3>
+                    <div class="mt-2">
+                      <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                        <span>进度: 65%</span>
+                        <span>3h 20m</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-value" style="width: 65%"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 课程卡片2 -->
+              <div class="course-card p-3">
+                <div class="flex items-start">
+                  <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="特种设备操作" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex justify-between">
+                      <span class="difficulty-badge difficulty-hard">高级</span>
+                      <span class="text-xs text-gray-500">4.9 <i class="fas fa-star text-yellow-400"></i></span>
+                    </div>
+                    <h3 class="font-medium text-gray-800 mt-1">特种设备操作证书培训</h3>
+                    <div class="mt-2">
+                      <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                        <span>进度: 30%</span>
+                        <span>6h 45m</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-value" style="width: 30%"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 课程卡片3 -->
+              <div class="course-card p-3">
+                <div class="flex items-start">
+                  <div class="w-20 h-20 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1581094480465-4e596ee3f4cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="应急处理" class="w-full h-full object-cover">
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex justify-between">
+                      <span class="difficulty-badge difficulty-medium">中级</span>
+                      <span class="text-xs text-gray-500">4.7 <i class="fas fa-star text-yellow-400"></i></span>
+                    </div>
+                    <h3 class="font-medium text-gray-800 mt-1">化工厂应急事件处理</h3>
+                    <div class="mt-2">
+                      <div class="flex justify-between items-center text-xs text-gray-500 mb-1">
+                        <span>进度: 0%</span>
+                        <span>5h 10m</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-value" style="width: 0%"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 即将到期的考试 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">即将到期的考试</h2>
+              <a href="#" class="text-indigo-600 text-sm">查看全部</a>
+            </div>
+            
+            <!-- 考试卡片 -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <span class="difficulty-badge difficulty-medium">中级考试</span>
+                  <h3 class="text-base font-medium text-gray-800 mt-1">化工安全操作规范认证</h3>
+                </div>
+                <span class="text-sm text-red-500">3天后到期</span>
+              </div>
+              
+              <div class="flex items-center mb-3">
+                <div class="bg-gray-100 w-12 h-12 rounded-full flex items-center justify-center mr-3">
+                  <i class="fas fa-clipboard-list text-gray-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-700">100道题目 | 120分钟</p>
+                  <p class="text-xs text-gray-500 mt-1">合格分数：80分</p>
+                </div>
+              </div>
+              
+              <div class="flex space-x-2">
+                <button class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium">开始考试</button>
+                <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">查看大纲</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 每日练习 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">每日练习</h2>
+              <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">今日已完成3题</span>
+            </div>
+            
+            <!-- 练习题 -->
+            <div class="question-card p-4">
+              <div class="flex justify-between items-start mb-4">
+                <span class="text-sm font-medium text-gray-500">题目 4/10</span>
+                <span class="difficulty-badge difficulty-medium">中级</span>
+              </div>
+              
+              <p class="text-base text-gray-800 mb-4">以下哪种情况下，必须佩戴正压式呼吸器？</p>
+              
+              <div class="mb-4">
+                <div class="option-item">
+                  <span class="text-sm text-gray-700">A. 在正常通风良好的车间内操作</span>
+                </div>
+                <div class="option-item selected">
+                  <span class="text-sm text-gray-700">B. 进入密闭空间进行检修</span>
+                </div>
+                <div class="option-item">
+                  <span class="text-sm text-gray-700">C. 在露天环境下进行取样</span>
+                </div>
+                <div class="option-item">
+                  <span class="text-sm text-gray-700">D. 查看仪表盘读数</span>
+                </div>
+              </div>
+              
+              <div class="flex space-x-2">
+                <button class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium">确认答案</button>
+                <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">跳过</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 证书栏 -->
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">我的证书</h2>
+              <a href="#" class="text-indigo-600 text-sm">全部证书</a>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <!-- 证书1 -->
+              <div class="certificate-card">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-award text-green-600"></i>
+                </div>
+                <h3 class="text-sm font-medium text-gray-800">危化品管理员</h3>
+                <p class="text-xs text-gray-500 mt-1">有效期至：2025-06-15</p>
+              </div>
+              
+              <!-- 证书2 -->
+              <div class="certificate-card">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-medal text-blue-600"></i>
+                </div>
+                <h3 class="text-sm font-medium text-gray-800">特种设备操作证</h3>
+                <p class="text-xs text-gray-500 mt-1">有效期至：2024-08-30</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+    
+    // 选项卡切换
+    const tabButtons = document.querySelectorAll('.category-tabs button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+        tabButtons.forEach(btn => btn.classList.add('bg-white', 'text-gray-700'));
+        button.classList.remove('bg-white', 'text-gray-700');
+        button.classList.add('active', 'bg-indigo-600', 'text-white');
+      });
+    });
+    
+    // 选项点击
+    const optionItems = document.querySelectorAll('.option-item');
+    optionItems.forEach(option => {
+      option.addEventListener('click', () => {
+        optionItems.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+      });
+    });
+  </script>
+</body>
+</html> 

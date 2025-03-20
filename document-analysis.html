@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 化工文档分析</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: relative;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 顶部导航栏样式 */
+    .top-nav-bar {
+      position: relative;
+      z-index: 999;
+      background-color: white;
+      color: #333;
+      padding: 14px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 导航栏图标按钮样式 */
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #666;
+    }
+    
+    /* 预览模式下固定导航栏 */
+    .preview-mode .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+    
+    .preview-mode .top-nav-bar {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .preview-mode .iphone-content-area {
+      padding-top: 80px; /* 状态栏+导航栏高度 */
+    }
+    
+    /* 内容区域样式 */
+    .iphone-content-area {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 80px); /* 减去状态栏和顶部导航的高度 */
+      overflow: auto;
+      padding-bottom: 20px;
+      background-color: #f9fafb;
+    }
+    
+    /* 分析类型选项卡 */
+    .analysis-tabs {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .analysis-tabs::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 选项卡样式优化 */
+    .analysis-tabs button {
+      height: 36px;
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    
+    .analysis-tabs button.active {
+      background-color: #6366F1;
+    }
+    
+    .analysis-tabs button:not(.active) {
+      background-color: white;
+      color: #333;
+    }
+    
+    /* 上传文档区域 */
+    .upload-area {
+      border: 2px dashed #e5e7eb;
+      border-radius: 16px;
+      transition: all 0.3s;
+    }
+    
+    .upload-area:hover, .upload-area.dragover {
+      border-color: #4F46E5;
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+    
+    /* 文档预览区域 */
+    .document-preview {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* 分析结果项目 */
+    .result-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .result-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 标签样式 */
+    .tag {
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #4F46E5;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    
+    /* 优先级标签 */
+    .priority-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .priority-low {
+      background-color: #DCF5DC;
+      color: #22863A;
+    }
+    
+    .priority-medium {
+      background-color: #FFF5C2;
+      color: #B08800;
+    }
+    
+    .priority-high {
+      background-color: #FFDCE0;
+      color: #CB2431;
+    }
+    
+    /* 历史记录样式 */
+    .history-item {
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+    
+    .history-item:active {
+      transform: scale(0.98);
+    }
+    
+    /* 进度条样式 */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: #4F46E5;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    /* 文档类型图标 */
+    .doc-icon {
+      width: 48px;
+      height: 60px;
+      position: relative;
+      margin-right: 12px;
+    }
+    
+    .doc-icon::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 48px;
+      height: 60px;
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .doc-icon.pdf::after {
+      content: "PDF";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2px 0;
+      background-color: #f87171;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 0 0 4px 4px;
+    }
+    
+    .doc-icon.doc::after {
+      content: "DOC";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2px 0;
+      background-color: #60a5fa;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 0 0 4px 4px;
+    }
+    
+    .doc-icon.txt::after {
+      content: "TXT";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2px 0;
+      background-color: #a3a3a3;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 0 0 4px 4px;
+    }
+    
+    .doc-icon.excel::after {
+      content: "XLS";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2px 0;
+      background-color: #10b981;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 0 0 4px 4px;
+    }
+
+    /* iPhone 外部边框样式 */
+    .iphone-frame {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background-color: #000;
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .iphone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #f9fafb;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    
+    .iphone-home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background-color: #000;
+      border-radius: 3px;
+      z-index: 10;
+    }
+    
+    /* 高亮标记样式 */
+    .highlight-marker {
+      background-color: rgba(99, 102, 241, 0.2);
+      border-bottom: 2px solid #6366F1;
+      padding: 0 2px;
+    }
+    
+    .highlight-marker.warning {
+      background-color: rgba(245, 158, 11, 0.2);
+      border-bottom: 2px solid #F59E0B;
+    }
+    
+    .highlight-marker.critical {
+      background-color: rgba(239, 68, 68, 0.2);
+      border-bottom: 2px solid #EF4444;
+    }
+    
+    /* 文档目录样式 */
+    .toc-item {
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .toc-item:hover {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .toc-item.active {
+      background-color: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid #6366F1;
+    }
+    
+    /* 表格样式 */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    
+    .data-table th {
+      background-color: #f3f4f6;
+      padding: 8px;
+      text-align: left;
+      font-weight: 500;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .data-table td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #4b5563;
+    }
+    
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* 文档工具栏样式 */
+    .doc-toolbar {
+      display: flex;
+      background-color: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 8px 12px;
+      justify-content: space-between;
+    }
+    
+    .doc-toolbar-button {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s;
+    }
+    
+    .doc-toolbar-button:active {
+      background-color: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <!-- iPhone 外部边框 - 只在非预览模式下显示 -->
+  <div class="iphone-frame">
+    <div class="iphone-screen">
+      <!-- 状态栏 - 移到iphone-screen内，但在content-area外 -->
+      <div class="status-bar">
+        <span>20:30</span>
+        <div class="flex items-center space-x-1">
+          <i class="fas fa-signal"></i>
+          <i class="fas fa-wifi"></i>
+          <i class="fas fa-battery-full"></i>
+        </div>
+      </div>
+      
+      <!-- 顶部导航栏 -->
+      <div class="top-nav-bar flex items-center justify-between">
+        <div class="flex items-center">
+          <a href="home.html" class="mr-3">
+            <i class="fas fa-arrow-left text-gray-600"></i>
+          </a>
+          <h1 class="text-lg font-medium text-gray-800">化工文档分析</h1>
+        </div>
+        <div class="flex items-center">
+          <div class="nav-icon-btn">
+            <i class="fas fa-history text-gray-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="iphone-content-area">
+        <!-- 主内容区域 -->
+        <div class="p-4" style="padding-top: 10px;">
+          <!-- 分析类型选项卡 -->
+          <div class="analysis-tabs overflow-x-auto flex space-x-2 pb-4 mb-4">
+            <button class="active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-file-alt mr-1"></i>安全规范
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-vial mr-1"></i>物质分析
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-table mr-1"></i>数据提取
+            </button>
+            <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center">
+              <i class="fas fa-book mr-1"></i>文献解析
+            </button>
+          </div>
+          
+          <!-- 上传文档区域 - 初始状态 -->
+          <div id="uploadContainer" class="mb-6">
+            <div class="upload-area flex flex-col items-center justify-center py-10 px-4 bg-white">
+              <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
+                <i class="fas fa-file-upload text-2xl text-indigo-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-gray-800 mb-2">上传化工安全规范文档</h3>
+              <p class="text-gray-500 text-sm text-center mb-4">支持PDF、Word、Excel、TXT等格式<br>最大50MB</p>
+              <div class="flex space-x-3">
+                <label for="fileUpload" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer flex items-center">
+                  <i class="fas fa-folder-open mr-2"></i>
+                  选择文件
+                  <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" class="hidden">
+                </label>
+                <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                  <i class="fas fa-paste mr-2"></i>
+                  粘贴文本
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 文档预览和分析结果 - 上传后显示 -->
+          <div id="resultContainer" class="hidden mb-6">
+            <!-- 文档信息 -->
+            <div class="flex items-center mb-4 bg-white p-3 rounded-xl">
+              <div class="doc-icon pdf"></div>
+              <div class="flex-1">
+                <h3 class="text-base font-medium text-gray-800">化工厂安全操作规范V2.3.pdf</h3>
+                <p class="text-xs text-gray-500">24页 | 2.8MB | 上传于 2分钟前</p>
+              </div>
+            </div>
+            
+            <!-- 分析进度 -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">分析进度</span>
+                <span class="text-sm text-indigo-600">100%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-value" style="width: 100%;"></div>
+              </div>
+            </div>
+            
+            <!-- 文档预览 -->
+            <div class="document-preview mb-4 bg-white">
+              <div class="flex p-3 border-b border-gray-200">
+                <button class="toc-item active flex-1 text-center text-sm font-medium">
+                  文档预览
+                </button>
+                <button class="toc-item flex-1 text-center text-sm">
+                  重点内容
+                </button>
+              </div>
+              <div class="p-4 max-h-60 overflow-y-auto text-sm text-gray-700 leading-relaxed">
+                <h4 class="font-medium mb-2">第三章 危险化学品安全管理</h4>
+                <p class="mb-3">3.1 <span class="highlight-marker critical">易燃易爆化学品必须存放在专用仓库</span>，严禁与氧化剂、还原剂等不相容物质混存。</p>
+                <p class="mb-3">3.2 危险化学品仓库必须配备<span class="highlight-marker">温度、湿度监控设备</span>，保持适宜的储存环境。</p>
+                <p class="mb-3">3.3 操作人员必须经过专业培训，<span class="highlight-marker warning">持证上岗</span>，严格按照操作规程进行作业。</p>
+                <p class="mb-3">3.4 进入受限空间作业前，必须进行<span class="highlight-marker critical">气体检测</span>，确认氧含量和有毒气体浓度符合安全要求。</p>
+                <h4 class="font-medium mb-2 mt-4">第四章 特殊工艺安全要求</h4>
+                <p class="mb-3">4.1 高温高压工艺操作，必须严格控制工艺参数，定期检查设备完好性。</p>
+                <p class="mb-3">4.2 <span class="highlight-marker warning">氯碱工艺作业</span>必须确保电解槽正常运行，防止氯气泄漏。</p>
+              </div>
+              <div class="doc-toolbar">
+                <div class="flex space-x-2">
+                  <button class="doc-toolbar-button">
+                    <i class="fas fa-search"></i>
+                  </button>
+                  <button class="doc-toolbar-button">
+                    <i class="fas fa-bookmark"></i>
+                  </button>
+                </div>
+                <div class="text-xs text-gray-500">
+                  3/24页
+                </div>
+                <div class="flex space-x-2">
+                  <button class="doc-toolbar-button">
+                    <i class="fas fa-chevron-left"></i>
+                  </button>
+                  <button class="doc-toolbar-button">
+                    <i class="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 关键点提取 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">关键安全要点</h3>
+              
+              <!-- 主要发现 -->
+              <div class="result-item p-3 mb-4 border-l-4 border-red-500">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="font-medium text-gray-800 mb-1">需严格执行的安全条例</h4>
+                    <p class="text-sm text-gray-500">文档中提取的必须严格遵守的安全要求</p>
+                  </div>
+                  <span class="priority-badge priority-high">高优先级</span>
+                </div>
+                <div class="mt-3">
+                  <ul class="text-sm text-gray-600 space-y-2 list-disc pl-4">
+                    <li>易燃易爆化学品必须存放在专用仓库（第3.1条）</li>
+                    <li>进入受限空间前必须进行气体检测（第3.4条）</li>
+                    <li>特种设备操作人员必须持证上岗（第5.2条）</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <!-- 次要发现 -->
+              <div class="space-y-3">
+                <div class="result-item p-3 border-l-4 border-yellow-500">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-1">需要定期检查的项目</h4>
+                      <p class="text-sm text-gray-500">需要建立定期检查制度的项目</p>
+                    </div>
+                    <span class="priority-badge priority-medium">中等优先级</span>
+                  </div>
+                  <div class="mt-2">
+                    <ul class="text-sm text-gray-600 space-y-1 list-disc pl-4">
+                      <li>危险化学品仓库的温湿度监控设备</li>
+                      <li>氯碱工艺电解槽的运行状态检查</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="result-item p-3 border-l-4 border-green-500">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-1">培训要求</h4>
+                      <p class="text-sm text-gray-500">员工需要进行的安全培训</p>
+                    </div>
+                    <span class="priority-badge priority-low">常规事项</span>
+                  </div>
+                  <div class="mt-2">
+                    <ul class="text-sm text-gray-600 space-y-1 list-disc pl-4">
+                      <li>危险化学品操作人员专业培训</li>
+                      <li>紧急情况应对培训</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 相关参数提取 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">提取参数数据</h3>
+              <div class="overflow-x-auto">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>参数名称</th>
+                      <th>标准值</th>
+                      <th>单位</th>
+                      <th>文档位置</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>氧含量</td>
+                      <td>19.5-23.5</td>
+                      <td>%</td>
+                      <td>第3.4条</td>
+                    </tr>
+                    <tr>
+                      <td>甲苯浓度限值</td>
+                      <td>&lt;50</td>
+                      <td>ppm</td>
+                      <td>附录A</td>
+                    </tr>
+                    <tr>
+                      <td>仓库温度</td>
+                      <td>5-25</td>
+                      <td>℃</td>
+                      <td>第3.2条</td>
+                    </tr>
+                    <tr>
+                      <td>仓库湿度</td>
+                      <td>&lt;75</td>
+                      <td>%RH</td>
+                      <td>第3.2条</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- 参考标准 -->
+            <div class="bg-white rounded-xl p-4 mb-4">
+              <h3 class="text-lg font-medium text-gray-800 mb-3">引用标准</h3>
+              <div>
+                <span class="tag">GB 30000</span>
+                <span class="tag">GB 15603</span>
+                <span class="tag">HG/T 20660</span>
+                <span class="tag">AQ T 3034</span>
+                <span class="tag">GB/T 16758</span>
+              </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex space-x-3 mb-6">
+              <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium">
+                <i class="fas fa-file-pdf mr-2"></i>生成摘要报告
+              </button>
+              <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium">
+                <i class="fas fa-share-alt mr-2"></i>分享结果
+              </button>
+            </div>
+          </div>
+          
+          <!-- 历史分析记录 -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-lg font-semibold text-gray-800">历史文档</h2>
+              <a href="history.html" class="text-indigo-600 text-sm">查看全部</a>
+            </div>
+            
+            <div class="space-y-3">
+              <!-- 历史记录1 -->
+              <div class="history-item overflow-hidden">
+                <div class="flex">
+                  <div class="w-12 flex items-center justify-center">
+                    <div class="doc-icon excel"></div>
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">2023年安全检查数据</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="text-xs text-gray-500">Excel | 1.2MB</span>
+                        </div>
+                      </div>
+                      <span class="text-xs text-gray-500">昨天</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">数据表格提取与分析</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 历史记录2 -->
+              <div class="history-item overflow-hidden">
+                <div class="flex">
+                  <div class="w-12 flex items-center justify-center">
+                    <div class="doc-icon pdf"></div>
+                  </div>
+                  <div class="flex-1 p-3">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h4 class="font-medium text-gray-800">设备维护手册</h4>
+                        <div class="flex items-center mt-1">
+                          <span class="text-xs text-gray-500">PDF | 8.5MB</span>
+                        </div>
+                      </div>
+                      <span class="text-xs text-gray-500">3天前</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">维护要点提取分析</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 相关功能推荐 -->
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">相关功能</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-file-signature text-blue-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">合规检查</h3>
+                <p class="text-xs text-gray-500">检查文档是否符合规范</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-language text-purple-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">多语言翻译</h3>
+                <p class="text-xs text-gray-500">标准文档多语言转换</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-images text-green-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">图片分析</h3>
+                <p class="text-xs text-gray-500">分析设备图像状态</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-tasks text-yellow-600"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">检查清单</h3>
+                <p class="text-xs text-gray-500">生成安全检查清单</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- iPhone Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+  
+  <script>
+    /**
+     * 简单切换上传和结果容器的显示
+     * 实际应用中应该根据真实上传和分析流程来控制
+     */
+    document.getElementById('fileUpload').addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        document.getElementById('uploadContainer').classList.add('hidden');
+        document.getElementById('resultContainer').classList.remove('hidden');
+        
+        // 模拟分析进度
+        const progressBar = document.querySelector('.progress-value');
+        progressBar.style.width = '0%';
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          progressBar.style.width = progress + '%';
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    });
+    
+    // 切换文档预览和重点内容选项卡
+    document.querySelectorAll('.toc-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.toc-item').forEach(el => {
+          el.classList.remove('active');
+        });
+        this.classList.add('active');
+      });
+    });
+    
+    // 检测是否在preview页面中
+    function isInPreview() {
+      try {
+        return window.location.href.indexOf('?preview=true') > -1 || 
+               window.parent && window.parent !== window;
+      } catch(e) {
+        // 如果无法访问parent（跨域问题），则可能在iframe中
+        return true;
+      }
+    }
+    
+    // 在网页加载时检测是否处于预览模式
+    window.addEventListener('DOMContentLoaded', function() {
+      if (isInPreview()) {
+        document.body.classList.add('preview-mode');
+        
+        const frameElement = document.querySelector('.iphone-frame');
+        if (frameElement) {
+          frameElement.style.boxShadow = 'none';
+          frameElement.style.backgroundColor = 'transparent';
+          frameElement.style.borderRadius = '0';
+          frameElement.style.padding = '0';
+          frameElement.style.margin = '0';
+          frameElement.style.width = '100%';
+          frameElement.style.height = '100%';
+        }
+        
+        const screenElement = document.querySelector('.iphone-screen');
+        if (screenElement) {
+          screenElement.style.borderRadius = '0';
+        }
+        
+        const homeIndicator = document.querySelector('.iphone-home-indicator');
+        if (homeIndicator) {
+          homeIndicator.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

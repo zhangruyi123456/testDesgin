@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI集合工具 - 创作社区</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 状态栏样式 */
+    .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 24px;
+      background-color: #f9fafb;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    /* 导航栏样式 */
+    .app-header {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background-color: #f9fafb;
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    /* 添加内容区域的上边距，避免被固定头部遮挡 */
+    .fixed-header-spacing {
+      padding-top: 86px; /* 状态栏+导航栏+一点额外空间 */
+      padding-bottom: 70px; /* 为底部导航留出空间 */
+    }
+    
+    /* 作品卡片样式 */
+    .work-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s;
+    }
+    
+    .work-card:active {
+      transform: scale(0.98);
+    }
+    
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background-color: white;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid #f0f0f0;
+      z-index: 999;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 0;
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    
+    .nav-label {
+      font-size: 12px;
+    }
+    
+    /* 分类标签滚动条样式 */
+    .tags-container {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .tags-container::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+    
+    /* 创作挑战样式 */
+    .challenge-card {
+      background: linear-gradient(45deg, #4F46E5, #8B5CF6);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    /* 瀑布流作品布局 */
+    .masonry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span>20:30</span>
+    <div class="flex items-center space-x-1">
+      <i class="fas fa-signal"></i>
+      <i class="fas fa-wifi"></i>
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <!-- 导航栏 -->
+  <div class="app-header">
+    <h1 class="text-xl font-semibold text-gray-800">创作社区</h1>
+    <div class="flex space-x-4">
+      <button class="text-gray-600">
+        <i class="fas fa-search"></i>
+      </button>
+      <button class="text-gray-600">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- 主内容区域 -->
+  <div class="fixed-header-spacing p-4">
+    <!-- 分类标签 -->
+    <div class="tags-container overflow-x-auto flex space-x-2 pb-4 mb-4">
+      <button class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">全部</button>
+      <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">AI绘画</button>
+      <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">音乐创作</button>
+      <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">文字创作</button>
+      <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">视频生成</button>
+      <button class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">3D模型</button>
+    </div>
+    
+    <!-- 创作挑战 -->
+    <div class="challenge-card p-4 mb-6 text-white">
+      <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center">
+          <i class="fas fa-fire text-yellow-300 mr-2"></i>
+          <span class="font-semibold">每周创作挑战</span>
+        </div>
+        <span class="text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">5天后结束</span>
+      </div>
+      <h3 class="text-lg font-bold mb-1">「未来城市」主题AI绘画</h3>
+      <p class="text-sm opacity-90 mb-3">描绘你心中的未来城市景观，获胜作品将获得专业点评</p>
+      <div class="flex justify-between">
+        <div class="text-sm">
+          <span class="opacity-80">已参与:</span>
+          <span class="font-medium">328人</span>
+        </div>
+        <button class="bg-white text-indigo-600 px-3 py-1 rounded-lg text-sm font-medium">立即参与</button>
+      </div>
+    </div>
+    
+    <!-- 热门推荐 -->
+    <div class="mb-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-gray-800">热门推荐</h2>
+        <button class="text-indigo-600 text-sm">查看全部</button>
+      </div>
+      
+      <!-- 瀑布流作品展示 -->
+      <div class="masonry-grid">
+        <!-- 作品 1 -->
+        <div class="work-card mb-3">
+          <img src="https://images.unsplash.com/photo-1686818755777-9b93b7bb29a7" alt="AI生成的未来城市" class="w-full aspect-square object-cover">
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">设计师小王</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>42</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 2 -->
+        <div class="work-card mb-3">
+          <img src="https://images.unsplash.com/photo-1683669260652-dd978c8a383e" alt="AI生成的抽象艺术" class="w-full aspect-[2/3] object-cover">
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">创意工作室</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>86</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 3 -->
+        <div class="work-card mb-3">
+          <img src="https://images.unsplash.com/photo-1682687981974-c5ef2111640c" alt="AI生成的角色设计" class="w-full aspect-[3/4] object-cover">
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">动漫爱好者</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>124</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>18</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 4 -->
+        <div class="work-card mb-3">
+          <img src="https://images.unsplash.com/photo-1681319350180-6c7844a89b2f" alt="AI生成的风景" class="w-full aspect-[4/5] object-cover">
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/men/42.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">风景摄影师</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>56</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 最新作品 -->
+    <div>
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-gray-800">最新作品</h2>
+        <div class="text-gray-500 text-sm">
+          <i class="fas fa-filter"></i>
+          <span class="ml-1">筛选</span>
+        </div>
+      </div>
+      
+      <!-- 瀑布流作品展示 -->
+      <div class="masonry-grid">
+        <!-- 作品 5 -->
+        <div class="work-card mb-3">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1684469400884-dc2b09d26772" alt="AI生成的音乐可视化" class="w-full aspect-square object-cover">
+            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <i class="fas fa-music mr-1"></i>
+              <span>音频</span>
+            </div>
+          </div>
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/women/28.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">电子音乐人</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>18</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 6 -->
+        <div class="work-card mb-3">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1683760156121-8e141508b1d1" alt="AI生成的文字创作" class="w-full aspect-[3/2] object-cover">
+            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <i class="fas fa-align-left mr-1"></i>
+              <span>文章</span>
+            </div>
+          </div>
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/men/77.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">科幻作家</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>32</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 7 -->
+        <div class="work-card mb-3">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1686003571669-a80608660f61" alt="AI生成的3D模型" class="w-full aspect-square object-cover">
+            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <i class="fas fa-cube mr-1"></i>
+              <span>3D</span>
+            </div>
+          </div>
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/women/52.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">3D艺术家</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>41</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>6</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 作品 8 -->
+        <div class="work-card mb-3">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1684781605089-d64332633010" alt="AI生成的概念设计" class="w-full aspect-[4/3] object-cover">
+            <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full flex items-center">
+              <i class="fas fa-image mr-1"></i>
+              <span>图像</span>
+            </div>
+          </div>
+          <div class="p-2 bg-white">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <img src="https://randomuser.me/api/portraits/men/36.jpg" alt="用户头像" class="w-5 h-5 rounded-full mr-1">
+                <span class="text-xs text-gray-700">概念艺术家</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-heart mr-1"></i>27</span>
+                <span class="text-xs text-gray-500 flex items-center"><i class="far fa-comment mr-1"></i>4</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <a href="home.html" class="nav-item">
+      <i class="fas fa-home nav-icon text-gray-500"></i>
+      <span class="nav-label text-gray-500">首页</span>
+    </a>
+    <a href="assistant.html" class="nav-item">
+      <i class="fas fa-comment-dots nav-icon text-gray-500"></i>
+      <span class="nav-label text-gray-500">助手</span>
+    </a>
+    <a href="community.html" class="nav-item">
+      <i class="fas fa-palette nav-icon text-indigo-600"></i>
+      <span class="nav-label text-indigo-600">创作</span>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <i class="fas fa-user nav-icon text-gray-500"></i>
+      <span class="nav-label text-gray-500">我的</span>
+    </a>
+  </div>
+</body>
+</html> 
