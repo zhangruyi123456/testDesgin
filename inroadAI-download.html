@@ -55,6 +55,7 @@
     .download-btn {
       display: flex;
       align-items: center;
+      justify-content: center;
       background: #f5f6fa;
       border-radius: 16px;
       padding: 12px 16px;
@@ -108,20 +109,9 @@
       // 这里可根据实际APP注入的userAgent或window变量判断
       return /inroadaiapp/i.test(navigator.userAgent);
     }
-
-    /**
-     * 页面加载后根据环境显示/隐藏WEB端导航栏
-     */
-    window.onload = function() {
-      if (!isInApp()) {
-        document.querySelector('.web-navbar').style.display = 'flex';
-      }
-    }
   </script>
 </head>
 <body>
-  <!-- WEB端导航栏，APP内嵌时自动隐藏 -->
-  <div class="web-navbar">工智道AI App下载</div>
   <div class="container">
     <!-- 顶部logo和标题区域 -->
     <div class="logo-title">
