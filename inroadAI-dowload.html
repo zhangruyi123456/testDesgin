@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>工智道AI App下载</title>
+  <style>
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+      background: #fff;
+      margin: 0;
+      padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0) 0;
+      color: #222;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 24px 12px 0 12px;
+    }
+    .logo-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .ai-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: #f5f6fa;
+      margin-right: 16px;
+      object-fit: contain;
+    }
+    .app-info {
+      flex: 1;
+    }
+    .app-title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .app-desc {
+      color: #888;
+      font-size: 1rem;
+    }
+    .section-title {
+      margin: 24px 0 8px 0;
+      color: #888;
+      font-size: 1.1rem;
+    }
+    .download-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .download-btn {
+      display: flex;
+      align-items: center;
+      background: #f5f6fa;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 1.1rem;
+      text-decoration: none;
+      color: #222;
+      transition: background 0.2s;
+      border: none;
+      outline: none;
+    }
+    .download-btn:hover {
+      background: #e6e8f0;
+    }
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      margin-right: 12px;
+      object-fit: contain;
+    }
+    .brand-name {
+      font-weight: 500;
+      margin-right: 4px;
+    }
+    .download-text {
+      color: #888;
+      font-size: 1rem;
+    }
+    /* WEB端导航栏样式 */
+    .web-navbar {
+      display: none;
+      height: 44px;
+      align-items: center;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding-left: 16px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    @media (min-width: 600px) {
+      .container {
+        margin-top: 40px;
+      }
+    }
+  </style>
+  <script>
+    /**
+     * 判断当前页面是否在APP内嵌WebView中
+     * @returns {boolean} true表示在APP内嵌，false表示普通浏览器
+     */
+    function isInApp() {
+      // 这里可根据实际APP注入的userAgent或window变量判断
+      return /inroadaiapp/i.test(navigator.userAgent);
+    }
+
+    /**
+     * 页面加载后根据环境显示/隐藏WEB端导航栏
+     */
+    window.onload = function() {
+      if (!isInApp()) {
+        document.querySelector('.web-navbar').style.display = 'flex';
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- WEB端导航栏，APP内嵌时自动隐藏 -->
+  <div class="web-navbar">工智道AI App下载</div>
+  <div class="container">
+    <!-- 顶部logo和标题区域 -->
+    <div class="logo-title">
+      <!-- AI logo，src可自定义替换 -->
+      <img class="ai-logo" src="/images/logo.png" alt="AI Logo">
+      <div class="app-info">
+        <div class="app-title">下载 工智道AI App</div>
+        <div class="app-desc">AI 化工行业智能助手</div>
+      </div>
+    </div>
+
+    <!-- iOS下载 -->
+    <div class="section-title">Apple iOS</div>
+    <div class="download-list">
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-apple.png" alt="Apple">
+        <span class="brand-name">从 App Store</span>
+        <span class="download-text">下载</span>
+      </a>
+    </div>
+
+    <!-- Android下载 -->
+    <div class="section-title">Android</div>
+    <div class="download-list">
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-huawei.png" alt="华为">
+        <span class="brand-name">从 华为应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-xiaomi.png" alt="小米">
+        <span class="brand-name">从 小米应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-vivo.png" alt="vivo">
+        <span class="brand-name">从 vivo应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-oppo.png" alt="OPPO">
+        <span class="brand-name">从 OPPO软件商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="/images/logo-honor.png" alt="荣耀">
+        <span class="brand-name">从 荣耀应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+    </div>
+  </div>
+  <!-- 
+    @file 工智道AI H5下载页
+    @description 兼容APP和WEB端，自动适配安全区，WEB端显示导航栏
+    @author 你的名字
+  -->
+</body>
+</html>
