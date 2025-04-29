@@ -122,7 +122,7 @@
     .wechat-tip-arrow {
       width: 60px;
       height: 60px;
-      margin: 0px 20px 0 auto;
+      margin: 0px 25px 0 auto;
       background: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q35 20 50 10" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 18 L50 10 L42 12" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/></svg>') no-repeat center;
       background-size: contain;
       display: block;
@@ -171,7 +171,7 @@
      */
     function handleDownload(event, url) {
       // 检查是否为微信内置浏览器，若是则弹出提示并阻止跳转
-      if (isWechatBrowser()) {
+      if (isWechatBrowser() && url.includes('app-release.apk')) {
         event.preventDefault();
         document.getElementById('wechatTip').style.display = 'block';
         return;
