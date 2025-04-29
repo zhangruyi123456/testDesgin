@@ -110,35 +110,34 @@
       background: rgba(0, 0, 0, 0.8);
       z-index: 9999;
       color: #fff;
-      text-align: center;
     }
     .wechat-tip-content {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 300px;
+      top: 20px;
+      right: 20px;
+      width: 200px;
+      text-align: right;
     }
     .wechat-tip-arrow {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 20px;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2L4 12h16L12 2z"/></svg>') no-repeat center;
+      width: 60px;
+      height: 60px;
+      margin: 0 0 10px auto;
+      background: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q35 20 50 10" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 18 L50 10 L42 12" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/></svg>') no-repeat center;
       background-size: contain;
     }
     .wechat-tip-text {
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1.5;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .wechat-tip-btn {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 6px 12px;
       background: #07c160;
       color: #fff;
       border-radius: 4px;
       text-decoration: none;
+      font-size: 0.9rem;
     }
   </style>
   <script>
@@ -175,6 +174,7 @@
     // 页面加载完成后执行
     document.addEventListener('DOMContentLoaded', function() {
       // 检测微信浏览器并显示提示
+      //if(true) {
       if (isWechatBrowser()) {
         document.getElementById('wechatTip').style.display = 'block';
       }
@@ -194,7 +194,7 @@
     <div class="wechat-tip-content">
       <div class="wechat-tip-arrow"></div>
       <div class="wechat-tip-text">
-        请点击右上角菜单<br>
+        请点击右上角的"..."图标<br>
         选择"在浏览器中打开"
       </div>
       <a href="javascript:;" class="wechat-tip-btn" onclick="document.getElementById('wechatTip').style.display='none'">
