@@ -99,6 +99,47 @@
         margin-top: 40px;
       }
     }
+    /* 微信浏览器提示样式 */
+    .wechat-tip {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      color: #fff;
+      text-align: center;
+    }
+    .wechat-tip-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 300px;
+    }
+    .wechat-tip-arrow {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2L4 12h16L12 2z"/></svg>') no-repeat center;
+      background-size: contain;
+    }
+    .wechat-tip-text {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .wechat-tip-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #07c160;
+      color: #fff;
+      border-radius: 4px;
+      text-decoration: none;
+    }
   </style>
   <script>
     /**
@@ -109,14 +150,64 @@
       // 这里可根据实际APP注入的userAgent或window变量判断
       return /inroadaiapp/i.test(navigator.userAgent);
     }
+
+    /**
+     * 检测是否在微信浏览器中
+     * @returns {boolean} true表示在微信浏览器中，false表示不在
+     */
+    function isWechatBrowser() {
+      return /MicroMessenger/i.test(navigator.userAgent);
+    }
+
+    /**
+     * 处理下载按钮点击事件
+     * @param {Event} event - 点击事件对象
+     * @param {string} url - 下载链接
+     */
+    function handleDownload(event, url) {
+      if (!url || url === '#') {
+        event.preventDefault();
+        alert('应用市场正在上架中...');
+        return;
+      }
+    }
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检测微信浏览器并显示提示
+      if (isWechatBrowser()) {
+        document.getElementById('wechatTip').style.display = 'block';
+      }
+
+      const downloadButtons = document.querySelectorAll('.download-btn');
+      downloadButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+          handleDownload(event, button.getAttribute('href'));
+        });
+      });
+    });
   </script>
 </head>
 <body>
+  <!-- 微信浏览器提示 -->
+  <div id="wechatTip" class="wechat-tip">
+    <div class="wechat-tip-content">
+      <div class="wechat-tip-arrow"></div>
+      <div class="wechat-tip-text">
+        请点击右上角菜单<br>
+        选择"在浏览器中打开"
+      </div>
+      <a href="javascript:;" class="wechat-tip-btn" onclick="document.getElementById('wechatTip').style.display='none'">
+        我知道了
+      </a>
+    </div>
+  </div>
+
   <div class="container">
     <!-- 顶部logo和标题区域 -->
     <div class="logo-title">
       <!-- AI logo，src可自定义替换 -->
-      <img class="ai-logo" src="/images/logo.png" alt="AI Logo">
+      <img class="ai-logo" src="./images/logo.png" alt="AI Logo">
       <div class="app-info">
         <div class="app-title">下载 工智道AI App</div>
         <div class="app-desc">AI 化工行业智能助手</div>
@@ -127,7 +218,7 @@
     <div class="section-title">Apple iOS</div>
     <div class="download-list">
       <a class="download-btn" href="#" target="_blank">
-        <img class="brand-logo" src="/images/logo-apple.png" alt="Apple">
+        <img class="brand-logo" src="./images/logo-apple.png" alt="Apple">
         <span class="brand-name">从 App Store</span>
         <span class="download-text">下载</span>
       </a>
@@ -136,36 +227,36 @@
     <!-- Android下载 -->
     <div class="section-title">Android</div>
     <div class="download-list">
-      <a class="download-btn" href="#" target="_blank">
-        <img class="brand-logo" src="/images/logo-android.png" alt="华为">
+      <a class="download-btn" href="https://files2025.in-road.com/aiapp/app-release.apk" target="_blank">
+        <img class="brand-logo" src="./images/logo-android.png" alt="华为">
         <span class="brand-name">下载APK文件</span>
         <span class="download-text"></span>
       </a>
-      <!-- <a class="download-btn" href="#" target="_blank"> -->
-        <!-- <img class="brand-logo" src="/images/logo-huawei.png" alt="华为"> -->
-        <!-- <span class="brand-name">从 华为应用商店</span> -->
-        <!-- <span class="download-text">下载</span> -->
-      <!-- </a> -->
-      <!-- <a class="download-btn" href="#" target="_blank"> -->
-        <!-- <img class="brand-logo" src="/images/logo-xiaomi.png" alt="小米"> -->
-        <!-- <span class="brand-name">从 小米应用商店</span> -->
-        <!-- <span class="download-text">下载</span> -->
-      <!-- </a> -->
-      <!-- <a class="download-btn" href="#" target="_blank"> -->
-        <!-- <img class="brand-logo" src="/images/logo-vivo.png" alt="vivo"> -->
-        <!-- <span class="brand-name">从 vivo应用商店</span> -->
-        <!-- <span class="download-text">下载</span> -->
-      <!-- </a> -->
-      <!-- <a class="download-btn" href="#" target="_blank"> -->
-        <!-- <img class="brand-logo" src="/images/logo-oppo.png" alt="OPPO"> -->
-        <!-- <span class="brand-name">从 OPPO软件商店</span> -->
-        <!-- <span class="download-text">下载</span> -->
-      <!-- </a> -->
-      <!-- <a class="download-btn" href="#" target="_blank"> -->
-        <!-- <img class="brand-logo" src="/images/logo-honor.png" alt="荣耀"> -->
-        <!-- <span class="brand-name">从 荣耀应用商店</span> -->
-        <!-- <span class="download-text">下载</span> -->
-      <!-- </a> -->
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="./images/logo-huawei.png" alt="华为">
+        <span class="brand-name">从 华为应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="./images/logo-xiaomi.png" alt="小米">
+        <span class="brand-name">从 小米应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="./images/logo-vivo.png" alt="vivo">
+        <span class="brand-name">从 vivo应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="./images/logo-oppo.png" alt="OPPO">
+        <span class="brand-name">从 OPPO软件商店</span>
+        <span class="download-text">下载</span>
+      </a>
+      <a class="download-btn" href="#" target="_blank">
+        <img class="brand-logo" src="./images/logo-honor.png" alt="荣耀">
+        <span class="brand-name">从 荣耀应用商店</span>
+        <span class="download-text">下载</span>
+      </a>
     </div>
   </div>
   <!-- 
