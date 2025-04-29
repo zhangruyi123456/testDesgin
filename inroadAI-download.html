@@ -113,22 +113,26 @@
     }
     .wechat-tip-content {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 200px;
-      text-align: right;
+      top: 0;
+      right: 0;
+      width: auto;
+      min-width: 180px;
+      text-align: center;
     }
     .wechat-tip-arrow {
       width: 60px;
       height: 60px;
-      margin: 0 0 10px auto;
+      margin: 0px 10px 0 auto;
       background: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q35 20 50 10" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 18 L50 10 L42 12" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/></svg>') no-repeat center;
       background-size: contain;
+      display: block;
     }
     .wechat-tip-text {
       font-size: 1rem;
       line-height: 1.5;
-      margin-bottom: 10px;
+      margin: 10px 16px 10px 16px;
+      color: #fff;
+      text-align: center;
     }
     .wechat-tip-btn {
       display: inline-block;
@@ -138,6 +142,7 @@
       border-radius: 4px;
       text-decoration: none;
       font-size: 0.9rem;
+      margin-bottom: 10px;
     }
   </style>
   <script>
@@ -156,6 +161,7 @@
      */
     function isWechatBrowser() {
       return /MicroMessenger/i.test(navigator.userAgent);
+      //return true;
     }
 
     /**
@@ -164,6 +170,12 @@
      * @param {string} url - 下载链接
      */
     function handleDownload(event, url) {
+      // 检查是否为微信内置浏览器，若是则弹出提示并阻止跳转
+      if (isWechatBrowser()) {
+        event.preventDefault();
+        document.getElementById('wechatTip').style.display = 'block';
+        return;
+      }
       if (!url || url === '#') {
         event.preventDefault();
         alert('应用市场正在上架中...');
@@ -175,9 +187,9 @@
     document.addEventListener('DOMContentLoaded', function() {
       // 检测微信浏览器并显示提示
       //if(true) {
-      if (isWechatBrowser()) {
-        document.getElementById('wechatTip').style.display = 'block';
-      }
+      // if (isWechatBrowser()) {
+        // document.getElementById('wechatTip').style.display = 'block';
+      // }
 
       const downloadButtons = document.querySelectorAll('.download-btn');
       downloadButtons.forEach(button => {
